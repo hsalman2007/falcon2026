@@ -349,7 +349,7 @@
         </div>
       </div>
     </sc-if>
-    <sc-if value="{{ d.canEdit }}"><button class="btn btn-secondary" onClick="{{ editDetail }}" style="min-height:48px;width:100%"><i class="ph ph-pencil-simple"></i>Edit invoice (Admin)</button></sc-if>
+    <sc-if value="{{ d.canEdit }}"><div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:8px"><button class="btn btn-secondary" onClick="{{ editDetail }}" style="min-height:48px"><i class="ph ph-pencil-simple"></i>Edit invoice</button><button class="btn btn-secondary" onClick="{{ askDelete }}" style="min-height:48px;color:var(--color-accent-200)"><i class="ph ph-trash"></i>Delete</button></div></sc-if>
 
     <div style="display:flex;flex-direction:column;gap:0;margin-top:4px">
       <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500);margin-bottom:8px">History</div>
@@ -384,6 +384,23 @@
 </div>
 </sc-if>
 
+<sc-if value="{{ delOpen }}" hint-placeholder-val="{{ false }}">
+<div class="dialog-backdrop" style="z-index:30">
+  <div class="dialog">
+    <div class="dialog-title">Delete this invoice?</div>
+    <div class="dialog-body" style="display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:14px;row-gap:6px;font-size:13px">
+      <span class="text-muted">Slip</span><span style="font-family:ui-monospace,Menlo,monospace;word-break:break-all">{{ d.slip }}</span>
+      <span class="text-muted">Customer</span><span>{{ d.cname }}</span>
+      <span class="text-muted">Amount</span><span>{{ d.amountF }} SAR</span>
+    </div>
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-400);display:flex;gap:6px"><i class="ph ph-warning" style="margin-top:2px"></i>This removes it for all users and cannot be undone. The slip number becomes available to enter again.</p>
+    <div class="dialog-actions">
+      <button class="btn btn-secondary" onClick="{{ closeDelete }}" style="min-height:44px">Cancel</button>
+      <button class="btn btn-primary" onClick="{{ doDelete }}" disabled="{{ busy }}" style="min-height:44px"><i class="ph ph-trash"></i>{{ delLabel }}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
 <sc-if value="{{ viewer }}" hint-placeholder-val="{{ false }}">
 <div onClick="{{ closeViewer }}" style="position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:16px;background:color-mix(in srgb,var(--color-neutral-900) 92%,transparent);cursor:zoom-out">
   <div role="img" aria-label="Slip" style="{{ viewerStyle }}"></div>
@@ -480,6 +497,9 @@ class Component extends DCLogic {
     await db.runTransaction(async t=>{const cur=(await t.get(ref)).data();const oldKey=cur.slipKey||norm(cur.slip);
       if(oldKey!==key){const ni=db.collection('slipIndex').doc(key);if((await t.get(ni)).exists)throw new Error('DUP');t.set(ni,{orderId:id,at:hist.at});t.delete(db.collection('slipIndex').doc(oldKey))}
       t.update(ref,{...rec,photo,slipKey:key,history:firebase.firestore.FieldValue.arrayUnion(hist)})})}
+  async deleteOrder(id){const o=this.state.orders.find(x=>x.id===id);if(!o)return;
+    if(this.state.mode!=='cloud'){if(!this.save(this.state.orders.filter(x=>x.id!==id)))throw new Error('device storage is full');return}
+    const db=this.fb.db,b=db.batch();b.delete(db.collection('orders').doc(id));b.delete(db.collection('slipIndex').doc(o.slipKey||norm(o.slip)));await b.commit()}
   async patchOrder(id,patch,hist){if(this.state.mode!=='cloud'){const orders=this.state.orders.map(o=>o.id===id?{...o,...patch,history:[...o.history,hist]}:o);if(!this.save(orders))throw new Error('device storage is full');return}
     await this.fb.db.collection('orders').doc(id).update({...patch,history:firebase.firestore.FieldValue.arrayUnion(hist)})}
   save(orders,extra={}){try{localStorage.setItem(KEY,JSON.stringify(orders));this.setState({orders,...extra});return true}catch(e){this.flash('Device storage is full — could not save. Export the report and clear old photos.');return false}}
@@ -593,7 +613,7 @@ class Component extends DCLogic {
       dRegions:['All',...REGIONS].map(r=>({label:r,active:S.dashRegion===r,pick:()=>this.setState({dashRegion:r,dashStore:'All'})})),dashStore:S.dashStore,dStoreOpts,onDashStore:e=>this.setState({dashStore:e.target.value}),
       kpis,totalValue:sar(dl.reduce((a,o)=>a+Number(o.amount),0)),openValueLabel:sar(openVal)+' not yet collected',pipe:{p:pct(P,T),r:pct(R,T),c:pct(Cc,T)},byStore,recent,
       exportSub:'Every field, readiness and collection record · '+T+' rows in current filter',exportFiltered:()=>this.exportRows(dl,S.dashStore!=='All'?S.dashStore:S.dashRegion.toLowerCase()),exportAll:()=>this.exportRows(sorted,'all'),
-      hasDetail:!!d,d:d||{},closeDetail:()=>this.setState({detailId:null,collect:null,cErrs:{}}),
+      hasDetail:!!d,d:d||{},closeDetail:()=>this.setState({delConfirm:false,detailId:null,collect:null,cErrs:{}}),
       markReady:()=>{if(S.busy)return;const now=new Date().toISOString();this.run(async()=>{await this.patchOrder(od.id,{status:'Ready',readyAt:now},{at:now,by:this.roleName(),text:'Marked ready for delivery'});this.flash('Marked Ready for Delivery')})},
       startCollect:()=>{const n=new Date();this.setState({collect:{name:'',mobile:'',date:today(),hh:pad(n.getHours()),mm:pad(Math.floor(n.getMinutes()/step)*step)},cErrs:{}})},
       collectOpen:!!S.collect&&!!od&&od.status==='Ready',collect:S.collect||{},cErrs:S.cErrs,cOn:{name:C('name'),mobile:C('mobile'),date:C('date'),hh:C('hh'),mm:C('mm')},
@@ -602,7 +622,8 @@ class Component extends DCLogic {
         if(Object.keys(e).length){this.setState({cErrs:e});return}const now=new Date().toISOString();
         if(S.busy)return;this.run(async()=>{await this.patchOrder(od.id,{status:'Collected',collected:{name:c.name.trim(),mobile:c.mobile,date:c.date,time:c.hh+':'+c.mm,at:now}},{at:now,by:this.roleName(),text:'Collected by '+c.name.trim()});this.setState({collect:null});this.flash('Collection recorded')})},
       editDetail:()=>{const [hh,mm]=(od.time||':').split(':');this.setState({editingId:od.id,detailId:null,view:'new',errs:{},form:{slip:od.slip,date:od.date,trans:od.trans,hh,mm,itemDraft:'',items:[...od.items],amount:String(od.amount),cname:od.cname,cmobile:od.cmobile,photo:od.photo,store:od.store}});window.scrollTo(0,0)},
-      toast:S.toast,
+      toast:S.toast,delOpen:!!S.delConfirm&&!!od,delLabel:S.busy?'Deleting…':'Delete invoice',askDelete:()=>this.setState({delConfirm:true}),closeDelete:()=>this.setState({delConfirm:false}),
+      doDelete:()=>{if(S.busy||role!=='admin')return;const id=od.id;this.run(async()=>{await this.deleteOrder(id);this.setState({delConfirm:false,detailId:null});this.flash('Invoice deleted')}).then(()=>this.setState({delConfirm:false}))},
       formPhotoStyle:ph(f.photo,{width:84,height:112}),detailPhotoStyle:ph(od&&od.photo,{width:96,height:132}),viewerStyle:ph(S.viewer,{width:'100%',height:'92vh',backgroundSize:'contain',backgroundPosition:'center',boxShadow:'none',cursor:'zoom-out'})
     };
   }
