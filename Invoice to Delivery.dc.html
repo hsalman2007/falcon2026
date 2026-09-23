@@ -74,6 +74,30 @@
   </div>
 
   <div class="card elev-sm" style="gap:12px;padding:14px">
+    <div class="card-kicker">{{ t.slipPhoto }}</div>
+    <sc-if value="{{ noPhoto }}">
+      <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:132px;border:1px dashed var(--color-neutral-700);border-radius:var(--radius-md);cursor:pointer;color:var(--color-accent);text-align:center;padding:16px">
+        <input type="file" accept="image/*" capture="environment" onChange="{{ onPhoto }}" style="display:none">
+        <i class="ph ph-camera" style="font-size:28px"></i>
+        <span style="font-size:14px;font-weight:500">{{ photoCta }}</span>
+        <span class="text-muted" style="font-size:12px">{{ photoHint }}</span>
+        
+      </label>
+    </sc-if>
+    <sc-if value="{{ form.photo }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div role="img" aria-label="Slip" onClick="{{ viewFormPhoto }}" style="{{ formPhotoStyle }}"></div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex:1">
+          <span style="display:flex;gap:6px;align-items:center;font-size:13px"><i class="ph ph-check-circle" style="color:var(--color-accent)"></i>{{ t.slipAttached }}</span>
+          <label class="btn btn-secondary" style="min-height:40px;align-self:flex-start"><input type="file" accept="image/*" capture="environment" onChange="{{ onPhoto }}" style="display:none"><i class="ph ph-arrows-clockwise"></i>{{ t.retake }}</label>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ ocrShow }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--color-accent-300);text-wrap:pretty"><i class="ph {{ ocrIcon }}" style="margin-top:2px"></i><span>{{ ocrMsg }}</span></div></sc-if>
+    <sc-if value="{{ errs.photo }}"><div style="font-size:12px;color:var(--color-accent-200)">{{ errs.photo }}</div></sc-if>
+  </div>
+
+  <div class="card elev-sm" style="gap:12px;padding:14px">
     <div class="card-kicker">{{ t.slipK }}</div>
     <div class="field"><label>{{ t.slipNo }}</label>
       <input class="input" value="{{ form.slip }}" onChange="{{ on.slip }}" placeholder="000000RY59000022354" autocapitalize="characters" dir="ltr" style="min-height:44px;font-family:ui-monospace,Menlo,monospace;letter-spacing:.02em">
@@ -146,27 +170,6 @@
     </div>
   </div>
 
-  <div class="card elev-sm" style="gap:12px;padding:14px">
-    <div class="card-kicker">{{ t.slipPhoto }}</div>
-    <sc-if value="{{ noPhoto }}">
-      <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:132px;border:1px dashed var(--color-neutral-700);border-radius:var(--radius-md);cursor:pointer;color:var(--color-accent);text-align:center;padding:16px">
-        <input type="file" accept="image/*" capture="environment" onChange="{{ onPhoto }}" style="display:none">
-        <i class="ph ph-camera" style="font-size:28px"></i>
-        <span style="font-size:14px;font-weight:500">{{ photoCta }}</span>
-        
-      </label>
-    </sc-if>
-    <sc-if value="{{ form.photo }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex;gap:12px;align-items:center">
-        <div role="img" aria-label="Slip" onClick="{{ viewFormPhoto }}" style="{{ formPhotoStyle }}"></div>
-        <div style="display:flex;flex-direction:column;gap:6px;flex:1">
-          <span style="display:flex;gap:6px;align-items:center;font-size:13px"><i class="ph ph-check-circle" style="color:var(--color-accent)"></i>{{ t.slipAttached }}</span>
-          <label class="btn btn-secondary" style="min-height:40px;align-self:flex-start"><input type="file" accept="image/*" capture="environment" onChange="{{ onPhoto }}" style="display:none"><i class="ph ph-arrows-clockwise"></i>{{ t.retake }}</label>
-        </div>
-      </div>
-    </sc-if>
-    <sc-if value="{{ errs.photo }}"><div style="font-size:12px;color:var(--color-accent-200)">{{ errs.photo }}</div></sc-if>
-  </div>
 
   <div class="card elev-sm" style="gap:12px;padding:14px">
     <div class="card-kicker">{{ t.assignStore }}</div>
@@ -428,13 +431,31 @@
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;requirePin&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sign-in&quot;},&quot;showDemoPins&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sign-in&quot;},&quot;minuteStep&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;5&quot;,&quot;15&quot;],&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Time dropdowns&quot;}}">
-const STORES=[{id:'thager',name:'Thager Plaza',region:'Central'},{id:'haramain',name:'Jeddah Haramain',region:'West'},{id:'dammam2',name:'Dammam 2',region:'East'}];
+const STORES=[{id:'thager',en:'Thager Plaza',ar:'الثغر بلازا',region:'Central'},{id:'haramain',en:'Jeddah Haramain',ar:'جدة الحرمين',region:'West'},{id:'dammam2',en:'Dammam 2',ar:'الدمام 2',region:'East'}].map(s=>Object.defineProperty(s,'name',{get(){return LANG==='ar'?this.ar:this.en},enumerable:true}));
 const STORE=Object.fromEntries(STORES.map(s=>[s.id,s]));
 const REGIONS=['Central','West','East'];
 let LANG='en';
 const AR={"Order entry":"إدخال الطلبات","Delivery / Store":"التسليم / الفرع","Admin":"المدير","Registers customer slips and assigns a store":"يسجّل إيصالات العملاء ويعيّن الفرع","Prepares orders and records customer collection":"يجهّز الطلبات ويسجّل استلام العميل","Monitors everything and can edit locked invoices":"يتابع كل شيء ويمكنه تعديل الفواتير المقفلة","Awaiting prep":"بانتظار التجهيز","Ready for delivery":"جاهز للتسليم","Collected":"تم الاستلام","Awaiting":"بانتظار","Ready":"جاهز","All":"الكل","Central":"الوسطى","West":"الغربية","East":"الشرقية","Password":"كلمة المرور","PIN":"الرمز","Account password":"كلمة المرور","4-digit PIN":"رمز من 4 أرقام","Connecting to Firebase…":"جارٍ الاتصال…","Signing in…":"جارٍ الدخول…","Sign in":"دخول","Cloud sync":"متزامن","Local demo":"تجريبي","Saving…":"جارٍ الحفظ…","Save changes":"حفظ التعديلات","Submit & lock":"إرسال وقفل","{0} · {1} region":"{0} · المنطقة {1}","{0} invoices on record":"{0} فاتورة مسجلة","New invoice":"فاتورة جديدة","Invoices":"الفواتير","Dashboard":"لوحة المتابعة","Store queue":"طلبات الفرع","All orders":"كل الطلبات","Already registered on {0} for {1} — this slip cannot be added twice.":"مسجّل مسبقاً في {0} لفرع {1} — لا يمكن إضافة الإيصال مرتين.","Edit invoice":"تعديل الفاتورة","Admin edit — changes are logged in the invoice history.":"تعديل المدير — تُسجَّل التغييرات في سجل الفاتورة.","Every field is required. Once submitted, the invoice is locked — only Admin can edit it.":"جميع الحقول إلزامية. بعد الإرسال تُقفل الفاتورة — التعديل للمدير فقط.","Submit invoice":"إرسال الفاتورة","{0} item · {1} pcs":"{0} صنف · {1} قطعة","{0} items · {1} pcs":"{0} أصناف · {1} قطعة","Take photo of slip":"صوّر الإيصال","Could not read that image":"تعذّرت قراءة الصورة","{0} — Region: {1}":"{0} — المنطقة: {1}","Duplicate slip — not saved.":"إيصال مكرر — لم يُحفظ.","{0} fields need attention":"{0} حقول تحتاج إلى مراجعة","1 field needs attention":"حقل واحد يحتاج إلى مراجعة","Save admin changes?":"حفظ تعديلات المدير؟","Submit this invoice?":"إرسال هذه الفاتورة؟","The edit will be recorded in the invoice history.":"سيُسجَّل التعديل في سجل الفاتورة.","After submitting, Order entry cannot change this invoice. It goes straight to the store’s delivery queue.":"بعد الإرسال لا يمكن لمدخل الطلبات تعديل الفاتورة، وتنتقل مباشرة إلى طلبات الفرع.","Invoice updated":"تم تحديث الفاتورة","Locked & sent to {0}":"تم القفل والإرسال إلى {0}","Orders assigned to your store. Tap one to prepare or hand over.":"الطلبات المعيّنة لفرعك. اضغط على طلب لتجهيزه أو تسليمه.","Tap any order to review or edit.":"اضغط على أي طلب للمراجعة أو التعديل.","Submitted invoices are read-only.":"الفواتير المرسلة للقراءة فقط.","All stores":"كل الفروع","All {0} stores":"كل فروع {0}","All regions":"كل المناطق","{0} region":"المنطقة {0}","{0} orders":"{0} طلب","Total orders":"إجمالي الطلبات","{0} not yet collected":"{0} لم تُستلم بعد","Every field, readiness and collection record · {0} rows in current filter":"كل الحقول وسجلات التجهيز والاستلام · {0} صف في الفلتر الحالي","Marked Ready for Delivery":"تم التحديد كجاهز للتسليم","Collection recorded":"تم تسجيل الاستلام","Deleting…":"جارٍ الحذف…","Delete invoice":"حذف الفاتورة","Invoice deleted":"تم حذف الفاتورة","Enter the slip number":"أدخل رقم الإيصال","Duplicate — this slip was already entered on {0} for {1}.":"مكرر — تم إدخال هذا الإيصال في {0} لفرع {1}.","Pick the date":"اختر التاريخ","Enter Trans no.":"أدخل رقم العملية","Select hour and minute":"اختر الساعة والدقيقة","Add at least one item number":"أضف رقم صنف واحداً على الأقل","Enter the net amount after savings":"أدخل المبلغ الصافي بعد التوفير","Enter the customer name":"أدخل اسم العميل","Saudi mobile — 10 digits starting 05":"جوال سعودي — 10 أرقام تبدأ بـ 05","Photograph the slip":"صوّر الإيصال","Assign a store":"اختر الفرع","Enter the receiver’s name":"أدخل اسم المستلم","Pick the collection date":"اختر تاريخ الاستلام","Cannot be before the invoice date":"لا يمكن أن يكون قبل تاريخ الفاتورة","Duplicate — this slip number is already registered.":"مكرر — رقم الإيصال مسجّل مسبقاً.","Not saved: {0}":"لم يُحفظ: {0}","your role is not allowed to do that.":"صلاحيتك لا تسمح بذلك.","Enter your user ID and password.":"أدخل اسم المستخدم وكلمة المرور.","Incorrect user ID or password.":"اسم المستخدم أو كلمة المرور غير صحيحة.","No internet connection.":"لا يوجد اتصال بالإنترنت.","Too many attempts — wait a minute and try again.":"محاولات كثيرة — انتظر دقيقة ثم حاول مجدداً.","Incorrect PIN for {0}.":"رمز غير صحيح لـ {0}.","Exported {0} rows":"تم تصدير {0} صف","No rows to export for this filter.":"لا توجد بيانات للتصدير.","Invoice registered & locked":"تم تسجيل الفاتورة وقفلها","Marked ready for delivery":"تم التجهيز للتسليم","Collected by {0}":"استلمها {0}"};
 const TT={"appName":["Invoice to Delivery","من الفاتورة إلى التسليم"],"appDesc":["Register a customer slip, hand it to the store, and track it until the customer collects.","سجّل إيصال العميل، وأرسله إلى الفرع، وتابعه حتى يستلم العميل طلبه."],"signInAs":["Sign in as","تسجيل الدخول كـ"],"userId":["User ID","اسم المستخدم"],"demoPins":["Demo PINs — Order 1111 · Delivery 2222 · Admin 9999","رموز تجريبية — الطلبات 1111 · التسليم 2222 · المدير 9999"],"slipK":["Slip","الإيصال"],"slipNo":["Slip No.","رقم الإيصال"],"date":["Date","التاريخ"],"trans":["Trans","رقم العملية"],"time":["Time","الوقت"],"hour":["Hour","الساعة"],"min":["Min","الدقيقة"],"itemsAmount":["Items & amount","الأصناف والمبلغ"],"itemNumbers":["Item numbers","أرقام الأصناف"],"itemPh":["Item no. e.g. 26-1438","رقم الصنف مثال 26-1438"],"qty":["Qty","الكمية"],"add":["Add","إضافة"],"totalAmt":["Total invoice amount — net after savings & discounts","إجمالي الفاتورة — الصافي بعد التوفير والخصومات"],"sar":["SAR","ر.س"],"customerK":["Customer","العميل"],"customerName":["Customer name","اسم العميل"],"fullName":["Full name","الاسم الكامل"],"mobileNumber":["Mobile number","رقم الجوال"],"slipPhoto":["Slip photo","صورة الإيصال"],"slipAttached":["Slip attached","تم إرفاق الإيصال"],"retake":["Retake","إعادة التصوير"],"assignStore":["Assign store","تعيين الفرع"],"selectStore":["Select store","اختر الفرع"],"cancelEdit":["Cancel edit","إلغاء التعديل"],"yourStore":["Your store","فرعك"],"searchPh":["Slip, trans, customer, mobile, item","إيصال، عملية، عميل، جوال، صنف"],"noMatch":["No invoices match these filters.","لا توجد فواتير مطابقة لهذه الفلاتر."],"dashboard":["Dashboard","لوحة المتابعة"],"netValue":["Net invoice value","صافي قيمة الفواتير"],"byStore":["By store","حسب الفرع"],"awaitingS":["awaiting","بانتظار التجهيز"],"readyS":["ready","جاهز"],"collectedS":["collected","مستلم"],"excel":["Excel report","تقرير Excel"],"filtered":["Filtered","حسب الفلتر"],"allRaw":["All raw data","كل البيانات"],"recent":["Recent activity","آخر النشاطات"],"invoice":["Invoice","الفاتورة"],"locked":["Locked after submission — only Admin can edit.","مقفلة بعد الإرسال — التعديل للمدير فقط."],"netAmount":["Net amount","المبلغ الصافي"],"customer":["Customer","العميل"],"dDate":["Date","التاريخ"],"dTime":["Time","الوقت"],"dTrans":["Trans","رقم العملية"],"dItems":["Items","الأصناف"],"dEntered":["Entered","أُدخلت"],"collectedBy":["Collected by","استلمها"],"receiver":["Receiver","المستلم"],"mobile":["Mobile","الجوال"],"collectedOn":["Collected","الاستلام"],"markReady":["Mark Ready for Delivery","جاهز للتسليم"],"recordCollection":["Record customer collection","تسجيل استلام العميل"],"collection":["Collection","الاستلام"],"receiverName":["Receiver name","اسم المستلم"],"personCollecting":["Person collecting","الشخص المستلم"],"receiverMobile":["Receiver mobile","جوال المستلم"],"sameAsCustomer":["Same as customer","نفس بيانات العميل"],"dateCollected":["Date collected","تاريخ الاستلام"],"timeCollected":["Time collected","وقت الاستلام"],"cancel":["Cancel","إلغاء"],"confirmCollected":["Confirm collected","تأكيد الاستلام"],"editInvoice":["Edit invoice","تعديل الفاتورة"],"delete":["Delete","حذف"],"history":["History","السجل"],"slip":["Slip","الإيصال"],"amount":["Amount","المبلغ"],"store":["Store","الفرع"],"back":["Back","رجوع"],"delTitle":["Delete this invoice?","حذف هذه الفاتورة؟"],"delNote":["This removes it for all users and cannot be undone. The slip number becomes available to enter again.","سيتم حذفها لجميع المستخدمين ولا يمكن التراجع، ويصبح رقم الإيصال متاحاً للإدخال مرة أخرى."]};
 const L=(s,...a)=>{let r=(LANG==='ar'&&AR[s])||s;a.forEach((v,i)=>{r=r.split('{'+i+'}').join(String(v))});return r};
+Object.assign(AR,{"Fields fill in automatically from the photo":"تُعبّأ الحقول تلقائياً من الصورة","Reading slip… {0}%":"جارٍ قراءة الإيصال… {0}%","Read {0} of 6 fields from the slip — please check them before submitting.":"تمت قراءة {0} من 6 حقول من الإيصال — يرجى مراجعتها قبل الإرسال.","Couldn’t read the slip — enter the fields manually.":"تعذّرت قراءة الإيصال — أدخل الحقول يدوياً."});
+const TESS='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+const ocrPrep=(file,mode)=>new Promise((res,rej)=>{const u=URL.createObjectURL(file);const img=new Image();img.onload=()=>{const k=Math.min(4,2200/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);const d=x.getImageData(0,0,c.width,c.height),p=d.data;const hist=new Array(256).fill(0),G=new Uint8ClampedArray(p.length/4);for(let i=0,j=0;i<p.length;i+=4,j++){const g=.299*p[i]+.587*p[i+1]+.114*p[i+2];G[j]=g;hist[G[j]]++}let th=128;if(mode==='bin'){let sum=0,sB=0,wB=0,best=0;const tot=G.length;for(let t=0;t<256;t++)sum+=t*hist[t];for(let t=0;t<256;t++){wB+=hist[t];if(!wB)continue;const wF=tot-wB;if(!wF)break;sB+=t*hist[t];const mB=sB/wB,mF=(sum-sB)/wF,v=wB*wF*(mB-mF)*(mB-mF);if(v>best){best=v;th=t}}}for(let i=0,j=0;i<p.length;i+=4,j++){const g=mode==='bin'?(G[j]>th?235:25):Math.max(0,Math.min(255,(G[j]-128)*1.15+128));p[i]=p[i+1]=p[i+2]=g}x.putImageData(d,0,0);URL.revokeObjectURL(u);res(c)};img.onerror=rej;img.src=u});
+const fixSlip=v=>{v=v.toUpperCase().replace(/[^0-9A-Z]/g,'');const dg={O:'0',Q:'0',D:'0',I:'1',L:'1',S:'5',B:'8',Z:'2',G:'6'};const m=v.match(/^([0-9OQDILSBZG]{6})([A-Z0-9]{2})([0-9OQDILSBZG]{8,14})$/);if(!m)return v;const f=s=>s.replace(/[A-Z]/g,c=>dg[c]||c);const lt=m[2].replace(/0/g,'O').replace(/1/g,'I').replace(/5/g,'S').replace(/8/g,'B');return f(m[1])+lt+f(m[3])};
+const parseSlip=raw=>{const T=raw.replace(/\r/g,'');const lines=T.split('\n').map(l=>l.trim()).filter(Boolean);const r={};
+  let m=T.match(/[S5$][l1I|!i][i1l|!][pP]\s*[:.;,]?\s*([0-9A-Z][0-9A-Z ]{11,28})/i)||T.match(/\b([0O]{4,6}\s?[A-Z0-9]{2}\s?[0-9O]{8,13})\b/);if(m){const v=fixSlip(m[1].replace(/\s/g,'').slice(0,19));if(v.length>=15)r.slip=v}
+  m=T.match(/Tr[a4]ns\S*?[\s:#.;,]*(\d[\d ]{3,8}\d)/i)||T.match(/Tr[a4]ns\S*?[\s:#.;,]*(\d{3,})/i);if(m)r.trans=m[1].replace(/\s/g,'');
+  const D1=/D[a4]te\S*[\s:.;,]*(\d{1,2})\s*[\/.\-\s]\s*(\d{1,2})\s*[\/.\-\s]\s*(\d{2,4})([^\n]*)/i,D2=/(\d{2})\s*[\/.\-]\s*(\d{2})\s*[\/.\-]\s*(\d{2,4})([^\n]*)/;
+  m=T.match(D1)||T.match(D2);
+  if(m){const dd=+m[1],mo=+m[2];const y=m[3].length===2?'20'+m[3]:m[3];if(dd>=1&&dd<=31&&mo>=1&&mo<=12)r.date=y+'-'+pad(mo)+'-'+pad(dd);
+    const tm=(m[4]||'').match(/^\s*(\d{1,2})\s*[:.\s]?\s*(\d{2})(?!\d)/);if(tm){const hh=+tm[1],mi=+tm[2];if(hh<24&&mi<60){r.hh=pad(hh);r.mi=mi}}}
+  if(!r.hh){const tm=T.match(/\b([01]?\d|2[0-3])\s*:\s*([0-5]\d)\b/);if(tm){r.hh=pad(+tm[1]);r.mi=+tm[2]}}
+  const items=[];lines.forEach((l,i)=>{const im=l.match(/^[^\w]{0,3}(\d{2}\s?-\s?\d{3,4})\b/);if(!im)return;const code=im[1].replace(/\s/g,'');let q=1;for(const n of lines.slice(i+1,i+3)){const qm=n.match(/(\d{1,3})\s*[xX×@]\s*[\d,]+[.,]\d{2}/);if(qm){q=+qm[1];break}}const ex=items.find(x=>x.code===code);if(ex)ex.qty+=q;else items.push({code,qty:q})});
+  if(items.length)r.items=items;
+  const num=l=>{const n=l.match(/(\d{1,3}(?:[,\s]\d{3})*|\d+)[.,\s](\d{2})\s*[^\d]*$/);return n?n[1].replace(/[,\s]/g,'')+'.'+n[2]:null};
+  for(const l of lines){if(/^[^\w]{0,2}Tota[l1I]\b/i.test(l)&&!/sav/i.test(l)){const v=num(l);if(v&&+v>0){r.amount=String(+v);break}}}
+  if(!r.amount){const i=lines.findIndex(l=>/Net\.?\s*Amt/i.test(l));if(i>=0&&lines[i+1]){const v=num(lines[i+1]);if(v)r.amount=String(+v)}}
+  return r};
 const itemsLbl=(n,q)=>L(n===1?'{0} item · {1} pcs':'{0} items · {1} pcs',n,q);
 const trHist=t=>{if(LANG!=='ar'||!t)return t;if(AR[t])return AR[t];if(t.startsWith('Collected by '))return L('Collected by {0}',t.slice(13));if(t.startsWith('Edited by Admin'))return 'عدّلها المدير'+t.slice(15);return t};
 const trBy=b=>LANG!=='ar'||!b?b:b.startsWith('Delivery · ')?'التسليم · '+b.slice(11):L(b);
@@ -477,7 +498,7 @@ const init=()=>{let orders,session=null;try{orders=JSON.parse(localStorage.getIt
   if(!Array.isArray(orders)){orders=seed();try{localStorage.setItem(KEY,JSON.stringify(orders))}catch(e){}}
   try{session=JSON.parse(localStorage.getItem(SKEY))}catch(e){}
   const st=(session&&session.store)||'thager';
-  return {orders,session,loginRole:'order',pin:'',loginErr:'',view:session?defView(session.role):'new',form:emptyForm(),errs:{},editingId:null,detailId:null,confirm:false,toast:'',viewer:'',q:'',statusF:'All',lRegion:STORE[st].region,lStore:session&&session.role==='delivery'?st:'All',collect:null,cErrs:{},dashRegion:'All',dashStore:'All',mode:'local',busy:false,lang:(localStorage.getItem('i2d.lang')==='ar'?'ar':'en')};
+  return {orders,session,loginRole:'order',pin:'',loginErr:'',view:session?defView(session.role):'new',form:emptyForm(),ocr:null,errs:{},editingId:null,detailId:null,confirm:false,toast:'',viewer:'',q:'',statusF:'All',lRegion:STORE[st].region,lStore:session&&session.role==='delivery'?st:'All',collect:null,cErrs:{},dashRegion:'All',dashStore:'All',mode:'local',busy:false,lang:(localStorage.getItem('i2d.lang')==='ar'?'ar':'en')};
 };
 
 class Component extends DCLogic {
@@ -528,7 +549,7 @@ class Component extends DCLogic {
   flash(t){clearTimeout(this._t);this.setState({toast:t});this._t=setTimeout(()=>this.setState({toast:''}),3200)}
   setForm(p){this.setState(s=>({form:{...s.form,...p},errs:{}}))}
   dupOf(slip,exceptId){const n=norm(slip);return n?this.state.orders.find(o=>norm(o.slip)===n&&o.id!==exceptId):null}
-  roleName(){const s=this.state.session;if(!s)return '';if(s.role==='delivery')return 'Delivery · '+(STORE[this.state.lStore]||{}).name;return s.role==='admin'?'Admin':'Order entry'}
+  roleName(){const s=this.state.session;if(!s)return '';if(s.role==='delivery')return 'Delivery · '+(STORE[this.state.lStore]||{}).en;return s.role==='admin'?'Admin':'Order entry'}
   validate(f){const e={};const dup=this.dupOf(f.slip,this.state.editingId);
     if(!f.slip.trim())e.slip=L('Enter the slip number');else if(dup)e.slip=L('Duplicate — this slip was already entered on {0} for {1}.',stamp(dup.createdAt),STORE[dup.store].name);
     if(!f.date)e.date=L('Pick the date');if(!f.trans.trim())e.trans=L('Enter Trans no.');
@@ -538,11 +559,21 @@ class Component extends DCLogic {
     if(!f.photo)e.photo=L('Photograph the slip');if(!f.store)e.store=L('Assign a store');return e}
   mergeItems(f){const codes=f.itemDraft.split(/[,\s]+/).map(x=>x.trim().toUpperCase()).filter(Boolean);const q=Math.max(1,parseInt(f.qtyDraft)||1);
     const items=NI(f.items);codes.forEach(c=>{const ex=items.find(x=>x.code===c);if(ex)ex.qty+=q;else items.push({code:c,qty:q})});return {...f,items,itemDraft:'',qtyDraft:'1'}}
+  async scanSlip(file,step){const tok=Date.now();this.ocrTok=tok;this.setState({ocr:{busy:true,pct:0}});
+    try{await loadScript(TESS);let pass=0;
+      if(!this.ocrW){this.ocrW=await window.Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text'&&this.ocrTok)this.setState(s=>s.ocr&&s.ocr.busy?{ocr:{busy:true,pct:Math.round((this.ocrPass*100+m.progress*100)/2)}}:null)}});await this.ocrW.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'})}
+      const run=async mode=>{this.ocrPass=pass++;const {data}=await this.ocrW.recognize(await ocrPrep(file,mode));return parseSlip(data.text||'')};
+      let r=await run('soft');if(this.ocrTok!==tok)return;
+      const need=()=>['slip','trans','date','hh','items','amount'].some(k=>!r[k]);if(need()){const r2=await run('bin');if(this.ocrTok!==tok)return;Object.keys(r2).forEach(k=>{if(k==='mi')return;if(k==='hh'&&!r.hh){r.hh=r2.hh;r.mi=r2.mi;return}if(!r[k]||(k==='trans'&&r2.trans.length>r.trans.length))r[k]=r2[k]})}
+      if(r.trans&&r.trans.length<4)delete r.trans;const p={};
+      if(r.slip)p.slip=r.slip;if(r.trans)p.trans=r.trans;if(r.date)p.date=r.date;if(r.hh){p.hh=r.hh;p.mm=pad(Math.floor(r.mi/step)*step)}if(r.items)p.items=r.items;if(r.amount)p.amount=r.amount;
+      const n=['slip','trans','date','hh','items','amount'].filter(k=>p[k]).length;this.setForm(p);this.setState({ocr:{busy:false,n}})}
+    catch(err){if(this.ocrTok===tok)this.setState({ocr:{busy:false,n:0}})}}
   addItem(){const f=this.state.form;if(!f.itemDraft.trim())return;this.setForm(this.mergeItems(f))}
   exportRows(rows,name){
     const data=rows.map(o=>{const s=STORE[o.store]||{};const c=o.collected||{};const ed=(o.history||[]).filter(h=>h.by==='Admin');return {
       'Slip No':o.slip,'Invoice Date':fmtDate(o.date),'Invoice Time':o.time,'Trans':o.trans,'Items (No. ×Qty)':itemsText(o.items),'Item Lines':NI(o.items).length,'Total Quantity':qtySum(o.items),
-      'Net Amount (SAR)':Number(o.amount),'Customer Name':o.cname,'Customer Mobile':o.cmobile,'Store':s.name,'Region':s.region,'Status':SL[o.status],
+      'Net Amount (SAR)':Number(o.amount),'Customer Name':o.cname,'Customer Mobile':o.cmobile,'Store':s.en,'Region':s.region,'Status':SL[o.status],
       'Entered At':stamp(o.createdAt),'Entered By':o.createdBy,'Ready At':o.readyAt?stamp(o.readyAt):'','Receiver Name':c.name||'','Receiver Mobile':c.mobile||'',
       'Collection Date':c.date?fmtDate(c.date):'','Collection Time':c.time||'','Slip Image':!o.photo?'Missing':/^https?:/.test(o.photo)?o.photo:'Attached (in app)','Entered By Account':o.createdByEmail||'','Admin Edits':ed.length,'Last Admin Edit':ed.length?stamp(ed[ed.length-1].at):''}});
     if(!data.length){this.flash(L('No rows to export for this filter.'));return}
@@ -603,7 +634,7 @@ class Component extends DCLogic {
       toggleLang:()=>{const n=LANG==='ar'?'en':'ar';try{localStorage.setItem('i2d.lang',n)}catch(e){}this.setState({lang:n})},
       roles:ROLES.map(r=>({...r,label:L(r.label),desc:L(r.desc),active:S.loginRole===r.id,border:S.loginRole===r.id?'var(--color-accent)':'var(--color-neutral-800)',iconColor:S.loginRole===r.id?'var(--color-accent)':'var(--color-neutral-500)',pick:()=>this.setState({loginRole:r.id,loginErr:''})})),
       onPin:e=>this.setState({pin:cloud?e.target.value:e.target.value.replace(/\D/g,'').slice(0,4),loginErr:''}),onPinKey:e=>{if(e.key==='Enter')doLogin()},login:doLogin,
-      logout:()=>{localStorage.removeItem(SKEY);if(cloud)this.fb.auth.signOut();this.setState({session:null,detailId:null,editingId:null,form:emptyForm(),errs:{}})},
+      logout:()=>{localStorage.removeItem(SKEY);if(cloud)this.fb.auth.signOut();this.setState({session:null,detailId:null,editingId:null,form:emptyForm(),ocr:null,errs:{}})},
       roleIcon:ro.icon,roleLabel:L(ro.label||''),headerSub:isDelivery?L('{0} · {1} region',(STORE[S.lStore]||{}).name,L(S.lRegion)):L('{0} invoices on record',S.orders.length),
       tabs:(tabsBy[role]||[]).map(([id,label,icon])=>({label:L(label),icon,color:S.view===id?'var(--color-accent)':'var(--color-neutral-500)',go:()=>{this.setState({view:id});window.scrollTo(0,0)}})),
       vNew:S.view==='new',vList:S.view==='list',vDash:S.view==='dash',
@@ -614,13 +645,13 @@ class Component extends DCLogic {
       itemKey:e=>{if(e.key==='Enter'){e.preventDefault();this.addItem()}},addItem:()=>this.addItem(),
       hasItems:f.items.length>0,itemCountLabel:f.items.length?itemsLbl(f.items.length,qtySum(f.items)):'',
       formItems:NI(f.items).map((it,i,all)=>({code:it.code,qty:it.qty,remove:()=>this.setForm({items:all.filter((_,j)=>j!==i)}),inc:()=>this.setForm({items:all.map((x,j)=>j===i?{...x,qty:x.qty+1}:x)}),dec:()=>this.setForm({items:all.map((x,j)=>j===i?{...x,qty:Math.max(1,x.qty-1)}:x)})})),
-      noPhoto:!f.photo,photoCta:L('Take photo of slip'),
-      onPhoto:e=>{const file=e.target.files&&e.target.files[0];e.target.value='';if(!file)return;compress(file).then(url=>this.setForm({photo:url})).catch(()=>this.flash(L('Could not read that image')))},
+      noPhoto:!f.photo,photoCta:L('Take photo of slip'),photoHint:L('Fields fill in automatically from the photo'),ocrShow:!!S.ocr,ocrIcon:S.ocr&&S.ocr.busy?'ph-spinner-gap':'ph-scan',ocrMsg:!S.ocr?'':S.ocr.busy?L('Reading slip… {0}%',S.ocr.pct||0):S.ocr.n?L('Read {0} of 6 fields from the slip — please check them before submitting.',S.ocr.n):L('Couldn’t read the slip — enter the fields manually.'),
+      onPhoto:e=>{const file=e.target.files&&e.target.files[0];e.target.value='';if(!file)return;if(!S.editingId)this.scanSlip(file,step);compress(file).then(url=>this.setForm({photo:url})).catch(()=>this.flash(L('Could not read that image')))},
       viewFormPhoto:()=>this.setState({viewer:f.photo}),viewDetailPhoto:()=>this.setState({viewer:od&&od.photo}),viewer:S.viewer,closeViewer:()=>this.setState({viewer:''}),
       storeOpts:STORES.map(s=>({id:s.id,label:L('{0} — Region: {1}',s.name,L(s.region))})),
       submit:()=>{let ff=f;if(ff.itemDraft.trim())ff=this.mergeItems(ff);
         const e=this.validate(ff);const n=Object.keys(e).length;if(n){this.setState({errs:e,form:ff});this.flash(n===1&&e.slip&&this.dupOf(ff.slip,S.editingId)?L('Duplicate slip — not saved.'):n>1?L('{0} fields need attention',n):L('1 field needs attention'));window.scrollTo(0,0);return}this.setState({confirm:true,form:ff})},
-      cancelEdit:()=>this.setState({editingId:null,form:emptyForm(),errs:{},view:'list'}),
+      cancelEdit:()=>this.setState({editingId:null,form:emptyForm(),ocr:null,errs:{},view:'list'}),
       confirmOpen:S.confirm,confirmTitle:L(S.editingId?'Save admin changes?':'Submit this invoice?'),confirmAmount:sar(f.amount),confirmStore:f.store?STORE[f.store].name+' · '+L(STORE[f.store].region):'',
       confirmNote:L(S.editingId?'The edit will be recorded in the invoice history.':'After submitting, Order entry cannot change this invoice. It goes straight to the store’s delivery queue.'),
       closeConfirm:()=>this.setState({confirm:false}),
@@ -629,9 +660,9 @@ class Component extends DCLogic {
         if(S.editingId){const old=S.orders.find(o=>o.id===S.editingId);const labels={slip:'slip',date:'date',trans:'trans',time:'time',items:'items',amount:'amount',cname:'customer',cmobile:'mobile',photo:'photo',store:'store'};
           const ch=Object.keys(labels).filter(k=>JSON.stringify(old[k])!==JSON.stringify(rec[k])).map(k=>labels[k]);
           const hist={at:now,by:'Admin',text:'Edited by Admin'+(ch.length?' — '+ch.join(', '):' — no changes')};const eid=S.editingId;
-          this.run(async()=>{await this.editOrder(eid,rec,hist);this.setState({confirm:false,editingId:null,form:emptyForm(),view:'list',detailId:eid});this.flash(L('Invoice updated'))})}
+          this.run(async()=>{await this.editOrder(eid,rec,hist);this.setState({confirm:false,editingId:null,form:emptyForm(),ocr:null,view:'list',detailId:eid});this.flash(L('Invoice updated'))})}
         else{const by=role==='admin'?'Admin':'Order entry';
-          this.run(async()=>{await this.createOrder(rec,by,now);this.setState({confirm:false,form:emptyForm()});this.flash(L('Locked & sent to {0}',STORE[rec.store].name));window.scrollTo(0,0)})}},
+          this.run(async()=>{await this.createOrder(rec,by,now);this.setState({confirm:false,form:emptyForm(),ocr:null});this.flash(L('Locked & sent to {0}',STORE[rec.store].name));window.scrollTo(0,0)})}},
       isDelivery,notDelivery:!isDelivery,listTitle:L(isDelivery?'Store queue':role==='admin'?'All orders':'Invoices'),
       listSub:L(isDelivery?'Orders assigned to your store. Tap one to prepare or hand over.':role==='admin'?'Tap any order to review or edit.':'Submitted invoices are read-only.'),
       lRegions,lStore:S.lStore,lStoreOpts,onLStore:e=>setLStore(e.target.value),q:S.q,onQ:e=>this.setState({q:e.target.value}),statusChips,list,listEmpty:!list.length,
