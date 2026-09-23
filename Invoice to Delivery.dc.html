@@ -579,15 +579,17 @@ class Component extends DCLogic {
     const items=NI(f.items);codes.forEach(c=>{const ex=items.find(x=>x.code===c);if(ex)ex.qty+=q;else items.push({code:c,qty:q})});return {...f,items,itemDraft:'',qtyDraft:'1'}}
   async aiRead(file){
     if(!this.aiX){const V='https://www.gstatic.com/firebasejs/12.19.0/';const A=await import(V+'firebase-app.js');const X=await import(V+'firebase-ai.js');
-      const app=A.getApps().find(a=>a.name==='i2d-ai')||A.initializeApp(this.fb.cfg.config,'i2d-ai');this.aiI=X.getAI(app,{backend:new X.GoogleAIBackend()});this.aiX=X}
+      const app=A.getApps().find(a=>a.name==='i2d-ai')||A.initializeApp(this.fb.cfg.config,'i2d-ai');const opts={backend:new X.GoogleAIBackend()};
+      const key=this.fb.cfg.recaptchaKey;if(key){const C=await import(V+'firebase-app-check.js');if(this.fb.cfg.appCheckDebug)self.FIREBASE_APPCHECK_DEBUG_TOKEN=this.fb.cfg.appCheckDebug;opts.appCheck=C.initializeAppCheck(app,{provider:this.fb.cfg.recaptchaEnterprise?new C.ReCaptchaEnterpriseProvider(key):new C.ReCaptchaV3Provider(key),isTokenAutoRefreshEnabled:true})}
+      this.aiI=X.getAI(app,opts);this.aiX=X}
     const b64=await new Promise((res,rej)=>{const u=URL.createObjectURL(file);const img=new Image();img.onload=()=>{const k=Math.min(1,1800/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.88).split(',')[1])};img.onerror=rej;img.src=u});
-    const models=[...new Set([this.props.aiModel,this.fb.cfg.aiModel,'gemini-3.1-flash-lite','gemini-2.5-flash'].filter(Boolean))];let last;
+    const models=[...new Set([this.props.aiModel,this.fb.cfg.aiModel,'gemini-3.1-flash-lite','gemini-3.8-flash','gemini-2.5-flash'].filter(Boolean))];let last;
     for(const m of models){try{const model=this.aiX.getGenerativeModel(this.aiI,{model:m,generationConfig:{responseMimeType:'application/json',temperature:0}});
-      const res=await model.generateContent([AI_PROMPT,{inlineData:{data:b64,mimeType:'image/jpeg'}}]);const txt=res.response.text();return normAI(JSON.parse(txt.replace(/```json|```/g,'').trim()))}catch(e){last=e}}
+      const res=await Promise.race([model.generateContent([AI_PROMPT,{inlineData:{data:b64,mimeType:'image/jpeg'}}]),new Promise((_,rej)=>setTimeout(()=>rej(new Error('AI timeout')),20000))]);const txt=res.response.text();return normAI(JSON.parse(txt.replace(/```json|```/g,'').trim()))}catch(e){last=e}}
     throw last}
   async scanSlip(file,step){const tok=Date.now();this.ocrTok=tok;this.setState({ocr:{busy:true,pct:0}});
     try{let ai=null;const KS=['slip','trans','date','hh','items','amount'];
-      if(this.fb&&this.fb.cfg.aiRead!==false){this.setState({ocr:{busy:true,ai:true}});ai=await this.aiRead(file).catch(e=>{console.warn('AI read failed — falling back to on-device OCR',e);return null});if(this.ocrTok!==tok)return}
+      if(this.fb&&this.fb.cfg.aiRead!==false){this.setState({ocr:{busy:true,ai:true}});ai=await this.aiRead(file).catch(e=>{console.warn('AI read failed — falling back to on-device OCR',e);this.aiErr=String((e&&e.message)||e).slice(0,160);return null});if(ai)this.aiErr='';if(this.ocrTok!==tok)return}
       const aiN=ai?KS.filter(k=>ai[k]).length:0;let r;
       if(aiN>=5)r=ai;else{this.setState({ocr:{busy:true,pct:0}});await loadScript(TESS);let pass=0;
       if(!this.ocrW){this.ocrW=await window.Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text'&&this.ocrTok)this.setState(s=>s.ocr&&s.ocr.busy?{ocr:{busy:true,pct:Math.round((this.ocrPass*100+m.progress*100)/2)}}:null)}});await this.ocrW.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'})}
@@ -675,7 +677,7 @@ class Component extends DCLogic {
       itemKey:e=>{if(e.key==='Enter'){e.preventDefault();this.addItem()}},addItem:()=>this.addItem(),
       hasItems:f.items.length>0,itemCountLabel:f.items.length?itemsLbl(f.items.length,qtySum(f.items)):'',
       formItems:NI(f.items).map((it,i,all)=>({code:it.code,qty:it.qty,remove:()=>this.setForm({items:all.filter((_,j)=>j!==i)}),inc:()=>this.setForm({items:all.map((x,j)=>j===i?{...x,qty:x.qty+1}:x)}),dec:()=>this.setForm({items:all.map((x,j)=>j===i?{...x,qty:Math.max(1,x.qty-1)}:x)})})),
-      noPhoto:!f.photo,photoCta:L('Take photo of slip'),photoHint:L('One photo is required — take it or upload it. Fields fill in automatically either way.'),ocrShow:!!S.ocr,ocrIcon:S.ocr&&S.ocr.busy?'ph-spinner-gap':'ph-scan',ocrMsg:!S.ocr?'':S.ocr.busy?(S.ocr.ai?L('Reading slip…'):L('Reading slip… {0}%',S.ocr.pct||0)):S.ocr.n?L('Read {0} of 6 fields from the slip — please check them before submitting.',S.ocr.n):L('Couldn’t read the slip — enter the fields manually.'),
+      noPhoto:!f.photo,photoCta:L('Take photo of slip'),photoHint:L('One photo is required — take it or upload it. Fields fill in automatically either way.'),ocrShow:!!S.ocr,ocrIcon:S.ocr&&S.ocr.busy?'ph-spinner-gap':'ph-scan',ocrMsg:(!S.ocr?'':S.ocr.busy?(S.ocr.ai?L('Reading slip…'):L('Reading slip… {0}%',S.ocr.pct||0)):S.ocr.n?L('Read {0} of 6 fields from the slip — please check them before submitting.',S.ocr.n):L('Couldn’t read the slip — enter the fields manually.'))+(S.ocr&&!S.ocr.busy&&this.aiErr?' · AI: '+this.aiErr:''),
       onPhoto:e=>{const file=e.target.files&&e.target.files[0];e.target.value='';if(!file)return;if(!S.editingId)this.scanSlip(file,step);compress(file).then(url=>this.setForm({photo:url})).catch(()=>this.flash(L('Could not read that image')))},
       viewFormPhoto:()=>this.setState({viewer:f.photo}),viewDetailPhoto:()=>this.setState({viewer:od&&od.photo}),viewer:S.viewer,closeViewer:()=>this.setState({viewer:''}),
       storeOpts:STORES.map(s=>({id:s.id,label:L('{0} — Region: {1}',s.name,L(s.region))})),
