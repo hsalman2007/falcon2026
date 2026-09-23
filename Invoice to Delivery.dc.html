@@ -538,7 +538,7 @@ class Component extends DCLogic {
         if(!ROLES.find(r=>r.id===role)){this.setState({loginErr:'This account has no role yet — add users/'+u.uid+' in Firestore.'});this.fb.auth.signOut();return}
         const store=STORE[localStorage.getItem('i2d.store')]?localStorage.getItem('i2d.store'):'thager';
         this.setState({session:{role,store,email:u.email},view:defView(role),lStore:role==='delivery'?store:'All',lRegion:STORE[store].region,statusF:'All',q:''});
-        this.unsub=this.fb.db.collection('orders').orderBy('createdAt','desc').onSnapshot(qs=>this.setState({orders:qs.docs.map(d=>({id:d.id,...d.data()}))}),err=>this.flash('Sync error: '+err.message));
+        this.unsub=this.fb.db.collection('orders').orderBy('createdAt','desc').onSnapshot(qs=>{const orders=qs.docs.map(d=>({id:d.id,...d.data()}));this.setState({orders});if(role==='admin')this.migratePhotos(orders)},err=>this.flash('Sync error: '+err.message));
       });
     }catch(e){this.setState({mode:'local'});this.flash('Firebase failed to load — running in local demo mode')}
   }
@@ -546,21 +546,26 @@ class Component extends DCLogic {
   run(fn){this.setState({busy:true});return Promise.resolve().then(fn).catch(err=>{const m=(err&&err.message)||String(err);
     if(m==='DUP'){this.setState({confirm:false,errs:{slip:L('Duplicate — this slip number is already registered.')}});this.flash(L('Duplicate slip — not saved.'))}
     else{this.setState({confirm:false});this.flash(L('Not saved: {0}',err&&err.code==='permission-denied'?L('your role is not allowed to do that.'):m))}}).finally(()=>this.setState({busy:false}))}
+  photoSrc(u){if(!u||!u.startsWith('fs:'))return u||'';const id=u.slice(3);this.pc=this.pc||{};if(this.pc[id]!==undefined)return this.pc[id]||'';
+    this.pc[id]=null;this.fb.db.collection('photos').doc(id).get().then(s=>{this.pc[id]=(s.exists&&s.data().data)||'';this.forceUpdate()}).catch(()=>{delete this.pc[id]});return ''}
+  splitPhoto(id,url){if(url&&url.startsWith('data:')&&!this.fb.storage){this.pc=this.pc||{};this.pc[id]=url;return ['fs:'+id,url]}return [url,null]}
+  async migratePhotos(orders){if(this.migrating)return;const old=orders.filter(o=>o.photo&&o.photo.startsWith('data:'));if(!old.length)return;this.migrating=true;
+    try{const db=this.fb.db;for(const o of old){const b=db.batch();b.set(db.collection('photos').doc(o.id),{data:o.photo,at:new Date().toISOString()});b.update(db.collection('orders').doc(o.id),{photo:'fs:'+o.id});await b.commit()}}catch(e){console.warn('photo migration',e)}finally{this.migrating=false}}
   async uploadPhoto(id,url){if(!url||!url.startsWith('data:')||!this.fb.storage)return url;const r=this.fb.storage.ref('slips/'+id+'-'+Date.now()+'.jpg');await r.putString(url,'data_url',{contentType:'image/jpeg'});return r.getDownloadURL()}
   async createOrder(rec,by,now){const key=norm(rec.slip);const hist=[{at:now,by,text:'Invoice registered & locked'}];
     if(this.state.mode!=='cloud'){if(this.dupOf(rec.slip))throw new Error('DUP');const o={id:uid(),...rec,slipKey:key,status:'Pending',createdAt:now,createdBy:by,history:hist};if(!this.save([o,...this.state.orders]))throw new Error('device storage is full');return}
     const db=this.fb.db,idx=db.collection('slipIndex').doc(key);if((await idx.get()).exists)throw new Error('DUP');
-    const ref=db.collection('orders').doc();const photo=await this.uploadPhoto(ref.id,rec.photo);
-    await db.runTransaction(async t=>{if((await t.get(idx)).exists)throw new Error('DUP');t.set(idx,{orderId:ref.id,at:now});t.set(ref,{...rec,photo,slipKey:key,status:'Pending',createdAt:now,createdBy:by,createdByEmail:this.fb.auth.currentUser.email,history:hist})})}
+    const ref=db.collection('orders').doc();const [photo,pdata]=this.splitPhoto(ref.id,await this.uploadPhoto(ref.id,rec.photo));
+    await db.runTransaction(async t=>{if((await t.get(idx)).exists)throw new Error('DUP');t.set(idx,{orderId:ref.id,at:now});if(pdata)t.set(db.collection('photos').doc(ref.id),{data:pdata,at:now});t.set(ref,{...rec,photo,slipKey:key,status:'Pending',createdAt:now,createdBy:by,createdByEmail:this.fb.auth.currentUser.email,history:hist})})}
   async editOrder(id,rec,hist){const key=norm(rec.slip);
     if(this.state.mode!=='cloud'){const orders=this.state.orders.map(o=>o.id===id?{...o,...rec,slipKey:key,history:[...o.history,hist]}:o);if(!this.save(orders))throw new Error('device storage is full');return}
-    const db=this.fb.db,ref=db.collection('orders').doc(id);const photo=await this.uploadPhoto(id,rec.photo);
+    const db=this.fb.db,ref=db.collection('orders').doc(id);const [photo,pdata]=this.splitPhoto(id,await this.uploadPhoto(id,rec.photo));
     await db.runTransaction(async t=>{const cur=(await t.get(ref)).data();const oldKey=cur.slipKey||norm(cur.slip);
       if(oldKey!==key){const ni=db.collection('slipIndex').doc(key);if((await t.get(ni)).exists)throw new Error('DUP');t.set(ni,{orderId:id,at:hist.at});t.delete(db.collection('slipIndex').doc(oldKey))}
-      t.update(ref,{...rec,photo,slipKey:key,history:firebase.firestore.FieldValue.arrayUnion(hist)})})}
+      if(pdata)t.set(db.collection('photos').doc(id),{data:pdata,at:hist.at});t.update(ref,{...rec,photo,slipKey:key,history:firebase.firestore.FieldValue.arrayUnion(hist)})})}
   async deleteOrder(id){const o=this.state.orders.find(x=>x.id===id);if(!o)return;
     if(this.state.mode!=='cloud'){if(!this.save(this.state.orders.filter(x=>x.id!==id)))throw new Error('device storage is full');return}
-    const db=this.fb.db,b=db.batch();b.delete(db.collection('orders').doc(id));b.delete(db.collection('slipIndex').doc(o.slipKey||norm(o.slip)));await b.commit()}
+    const db=this.fb.db,b=db.batch();b.delete(db.collection('orders').doc(id));if(o.photo&&o.photo.startsWith('fs:'))b.delete(db.collection('photos').doc(id));b.delete(db.collection('slipIndex').doc(o.slipKey||norm(o.slip)));await b.commit()}
   async patchOrder(id,patch,hist){if(this.state.mode!=='cloud'){const orders=this.state.orders.map(o=>o.id===id?{...o,...patch,history:[...o.history,hist]}:o);if(!this.save(orders))throw new Error('device storage is full');return}
     await this.fb.db.collection('orders').doc(id).update({...patch,history:firebase.firestore.FieldValue.arrayUnion(hist)})}
   save(orders,extra={}){try{localStorage.setItem(KEY,JSON.stringify(orders));this.setState({orders,...extra});return true}catch(e){this.flash('Device storage is full — could not save. Export the report and clear old photos.');return false}}
@@ -617,6 +622,7 @@ class Component extends DCLogic {
   renderVals(){
     const S=this.state,p=this.props;const sess=S.session;const role=sess&&sess.role;const cloud=S.mode==='cloud';LANG=S.lang||'en';
     const step=Number(p.minuteStep??1)||1;
+    const PS=u=>cloud&&this.fb?this.photoSrc(u):(u||'');
     const hours=[...Array(24)].map((_,i)=>pad(i));const mins=[...Array(Math.ceil(60/step))].map((_,i)=>pad(i*step));
     const ph=(u,x)=>({flex:'none',backgroundImage:u?'url("'+u+'")':'none',backgroundSize:'cover',backgroundPosition:'center top',backgroundRepeat:'no-repeat',borderRadius:'var(--radius-sm)',boxShadow:'var(--shadow-sm)',cursor:'zoom-in',...x});
     const vm=o=>{const s=STORE[o.store]||{};const n=NI(o.items).length,tq=qtySum(o.items);return {...o,itemList:NI(o.items),storeName:s.name,region:L(s.region),regionLabel:L('{0} region',L(s.region)),dateF:fmtDate(o.date),amountF:sar(o.amount),itemsLabel:itemsLbl(n,tq),statusLabel:L(SL[o.status]),tagClass:TAG[o.status],open:()=>this.setState({detailId:o.id,collect:null,cErrs:{}})}};
@@ -679,7 +685,7 @@ class Component extends DCLogic {
       formItems:NI(f.items).map((it,i,all)=>({code:it.code,qty:it.qty,remove:()=>this.setForm({items:all.filter((_,j)=>j!==i)}),inc:()=>this.setForm({items:all.map((x,j)=>j===i?{...x,qty:x.qty+1}:x)}),dec:()=>this.setForm({items:all.map((x,j)=>j===i?{...x,qty:Math.max(1,x.qty-1)}:x)})})),
       noPhoto:!f.photo,photoCta:L('Take photo of slip'),photoHint:L('One photo is required — take it or upload it. Fields fill in automatically either way.'),ocrShow:!!S.ocr,ocrIcon:S.ocr&&S.ocr.busy?'ph-spinner-gap':'ph-scan',ocrMsg:(!S.ocr?'':S.ocr.busy?(S.ocr.ai?L('Reading slip…'):L('Reading slip… {0}%',S.ocr.pct||0)):S.ocr.n?L('Read {0} of 6 fields from the slip — please check them before submitting.',S.ocr.n):L('Couldn’t read the slip — enter the fields manually.'))+(S.ocr&&!S.ocr.busy&&this.aiErr?' · AI: '+this.aiErr:''),
       onPhoto:e=>{const file=e.target.files&&e.target.files[0];e.target.value='';if(!file)return;if(!S.editingId)this.scanSlip(file,step);compress(file).then(url=>this.setForm({photo:url})).catch(()=>this.flash(L('Could not read that image')))},
-      viewFormPhoto:()=>this.setState({viewer:f.photo}),viewDetailPhoto:()=>this.setState({viewer:od&&od.photo}),viewer:S.viewer,closeViewer:()=>this.setState({viewer:''}),
+      viewFormPhoto:()=>this.setState({viewer:PS(f.photo)}),viewDetailPhoto:()=>{const u=PS(od&&od.photo);if(u)this.setState({viewer:u})},viewer:S.viewer,closeViewer:()=>this.setState({viewer:''}),
       storeOpts:STORES.map(s=>({id:s.id,label:L('{0} — Region: {1}',s.name,L(s.region))})),
       submit:()=>{let ff=f;if(ff.itemDraft.trim())ff=this.mergeItems(ff);
         const e=this.validate(ff);const n=Object.keys(e).length;if(n){this.setState({errs:e,form:ff});this.flash(n===1&&e.slip&&this.dupOf(ff.slip,S.editingId)?L('Duplicate slip — not saved.'):n>1?L('{0} fields need attention',n):L('1 field needs attention'));window.scrollTo(0,0);return}this.setState({confirm:true,form:ff})},
@@ -713,7 +719,7 @@ class Component extends DCLogic {
       editDetail:()=>{const [hh,mm]=(od.time||':').split(':');this.setState({editingId:od.id,detailId:null,view:'new',errs:{},form:{slip:od.slip,date:od.date,trans:od.trans,hh,mm,itemDraft:'',items:NI(od.items),qtyDraft:'1',amount:String(od.amount),cname:od.cname,cmobile:od.cmobile,photo:od.photo,store:od.store}});window.scrollTo(0,0)},
       toast:S.toast,delOpen:!!S.delConfirm&&!!od,delLabel:L(S.busy?'Deleting…':'Delete invoice'),askDelete:()=>this.setState({delConfirm:true}),closeDelete:()=>this.setState({delConfirm:false}),
       doDelete:()=>{if(S.busy||role!=='admin')return;const id=od.id;this.run(async()=>{await this.deleteOrder(id);this.setState({delConfirm:false,detailId:null});this.flash(L('Invoice deleted'))}).then(()=>this.setState({delConfirm:false}))},
-      formPhotoStyle:ph(f.photo,{width:84,height:112}),detailPhotoStyle:ph(od&&od.photo,{width:96,height:132}),viewerStyle:ph(S.viewer,{width:'100%',height:'92vh',backgroundSize:'contain',backgroundPosition:'center',boxShadow:'none',cursor:'zoom-out'})
+      formPhotoStyle:ph(PS(f.photo),{width:84,height:112}),detailPhotoStyle:ph(PS(od&&od.photo),{width:96,height:132}),viewerStyle:ph(S.viewer,{width:'100%',height:'92vh',backgroundSize:'contain',backgroundPosition:'center',boxShadow:'none',cursor:'zoom-out'})
     };
   }
 }
