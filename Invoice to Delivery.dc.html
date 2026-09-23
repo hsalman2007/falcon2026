@@ -98,16 +98,25 @@
   </div>
 
   <div class="card elev-sm" style="gap:12px;padding:14px">
-    <div style="display:flex;align-items:baseline;justify-content:space-between"><div class="card-kicker" style="white-space:nowrap;flex:none">Items &amp; amount</div><span class="text-muted" style="font-size:12px">{{ itemCountLabel }}</span></div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between"><div class="card-kicker" style="white-space:nowrap;flex:none">Items &amp; amount</div><span class="text-muted" style="font-size:12px;white-space:nowrap">{{ itemCountLabel }}</span></div>
     <div class="field"><label>Item numbers</label>
       <div style="display:flex;gap:8px">
-        <input class="input" value="{{ form.itemDraft }}" onChange="{{ on.itemDraft }}" onKeyDown="{{ itemKey }}" placeholder="e.g. 26-1438" style="min-height:44px;font-family:ui-monospace,Menlo,monospace">
-        <button class="btn btn-secondary" onClick="{{ addItem }}" style="min-height:44px;min-width:64px"><i class="ph ph-plus"></i>Add</button>
+        <input class="input" value="{{ form.itemDraft }}" onChange="{{ on.itemDraft }}" onKeyDown="{{ itemKey }}" placeholder="Item no. e.g. 26-1438" style="min-height:44px;flex:1;min-width:0;font-family:ui-monospace,Menlo,monospace">
+        <input class="input" inputmode="numeric" value="{{ form.qtyDraft }}" onChange="{{ on.qtyDraft }}" onKeyDown="{{ itemKey }}" aria-label="Quantity" placeholder="Qty" style="min-height:44px;width:60px;flex:none;text-align:center;font-variant-numeric:tabular-nums">
+        <button class="btn btn-secondary" onClick="{{ addItem }}" style="min-height:44px;flex:none;min-width:64px"><i class="ph ph-plus"></i>Add</button>
       </div>
       <sc-if value="{{ hasItems }}">
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
           <sc-for list="{{ formItems }}" as="it">
-            <span class="tag tag-neutral" style="gap:6px;padding:4px 4px 4px 10px;font-family:ui-monospace,Menlo,monospace;font-size:12px">{{ it.code }}<button onClick="{{ it.remove }}" aria-label="Remove" style="display:grid;place-items:center;width:22px;height:22px;border:0;border-radius:4px;background:transparent;color:inherit;cursor:pointer"><i class="ph ph-x"></i></button></span>
+            <div style="display:flex;align-items:center;gap:8px;padding:4px 4px 4px 12px;border-radius:var(--radius-md);background:var(--color-neutral-900)">
+              <span style="flex:1;min-width:0;font-family:ui-monospace,Menlo,monospace;font-size:13px;overflow:hidden;text-overflow:ellipsis">{{ it.code }}</span>
+              <div style="display:flex;align-items:center;border:1px solid var(--color-divider);border-radius:var(--radius-md)">
+                <button onClick="{{ it.dec }}" aria-label="Decrease quantity" style="display:grid;place-items:center;width:40px;height:40px;border:0;background:transparent;color:var(--color-text);cursor:pointer"><i class="ph ph-minus"></i></button>
+                <span style="min-width:28px;text-align:center;font-size:14px;font-variant-numeric:tabular-nums">{{ it.qty }}</span>
+                <button onClick="{{ it.inc }}" aria-label="Increase quantity" style="display:grid;place-items:center;width:40px;height:40px;border:0;background:transparent;color:var(--color-text);cursor:pointer"><i class="ph ph-plus"></i></button>
+              </div>
+              <button onClick="{{ it.remove }}" aria-label="Remove item" style="display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:var(--radius-sm);background:transparent;color:var(--color-neutral-400);cursor:pointer"><i class="ph ph-trash"></i></button>
+            </div>
           </sc-for>
         </div>
       </sc-if>
@@ -314,7 +323,7 @@
       <span class="text-muted">Date</span><span>{{ d.dateF }}</span>
       <span class="text-muted">Time</span><span>{{ d.time }}</span>
       <span class="text-muted">Trans</span><span style="font-family:ui-monospace,Menlo,monospace">{{ d.trans }}</span>
-      <span class="text-muted">Items</span><span style="display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ d.items }}" as="it"><span class="tag tag-neutral" style="font-family:ui-monospace,Menlo,monospace">{{ it }}</span></sc-for></span>
+      <span class="text-muted">Items</span><span style="display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ d.itemList }}" as="it"><span class="tag tag-neutral" style="font-family:ui-monospace,Menlo,monospace">{{ it.code }} × {{ it.qty }}</span></sc-for></span>
       <span class="text-muted">Entered</span><span>{{ d.createdF }} · {{ d.createdBy }}</span>
     </div>
     <sc-if value="{{ d.collected }}">
@@ -437,7 +446,10 @@ const pct=(a,b)=>(b?(a/b*100):0).toFixed(2)+'%';
 const MOB=/^05\d{8}$/;
 const FBV='https://www.gstatic.com/firebasejs/10.12.2/';
 const loadScript=src=>new Promise((res,rej)=>{if(document.querySelector('script[data-src="'+src+'"]'))return res();const s=document.createElement('script');s.src=src;s.dataset.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)});
-const emptyForm=()=>({slip:'',date:today(),trans:'',hh:'',mm:'',itemDraft:'',items:[],amount:'',cname:'',cmobile:'',photo:'',store:''});
+const NI=a=>(a||[]).map(x=>typeof x==='string'?{code:x,qty:1}:{code:x.code,qty:Math.max(1,parseInt(x.qty)||1)});
+const qtySum=a=>NI(a).reduce((s,x)=>s+x.qty,0);
+const itemsText=a=>NI(a).map(x=>x.code+' ×'+x.qty).join(', ');
+const emptyForm=()=>({slip:'',date:today(),trans:'',hh:'',mm:'',itemDraft:'',qtyDraft:'1',items:[],amount:'',cname:'',cmobile:'',photo:'',store:''});
 const uid=()=>'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const seed=()=>{const now=Date.now();const ago=h=>new Date(now-h*3600e3).toISOString();
   const mk=(o,h,extra=[])=>({id:uid(),createdAt:ago(h),createdBy:'Order entry',history:[{at:ago(h),by:'Order entry',text:'Invoice registered & locked'},...extra.map(([hh,by,t])=>({at:ago(hh),by,text:t}))],...o});
@@ -514,11 +526,12 @@ class Component extends DCLogic {
     if(!(parseFloat(f.amount)>0))e.amount='Enter the net amount after savings';
     if(!f.cname.trim())e.cname='Enter the customer name';if(!MOB.test(f.cmobile))e.cmobile='Saudi mobile — 10 digits starting 05';
     if(!f.photo)e.photo='Photograph the slip';if(!f.store)e.store='Assign a store';return e}
-  addItem(){const f=this.state.form;const codes=f.itemDraft.split(/[,\s]+/).map(x=>x.trim().toUpperCase()).filter(Boolean);if(!codes.length)return;
-    const items=[...f.items];codes.forEach(c=>{if(!items.includes(c))items.push(c)});this.setForm({items,itemDraft:''})}
+  mergeItems(f){const codes=f.itemDraft.split(/[,\s]+/).map(x=>x.trim().toUpperCase()).filter(Boolean);const q=Math.max(1,parseInt(f.qtyDraft)||1);
+    const items=NI(f.items);codes.forEach(c=>{const ex=items.find(x=>x.code===c);if(ex)ex.qty+=q;else items.push({code:c,qty:q})});return {...f,items,itemDraft:'',qtyDraft:'1'}}
+  addItem(){const f=this.state.form;if(!f.itemDraft.trim())return;this.setForm(this.mergeItems(f))}
   exportRows(rows,name){
     const data=rows.map(o=>{const s=STORE[o.store]||{};const c=o.collected||{};const ed=(o.history||[]).filter(h=>h.by==='Admin');return {
-      'Slip No':o.slip,'Invoice Date':fmtDate(o.date),'Invoice Time':o.time,'Trans':o.trans,'Item Numbers':o.items.join(', '),'Item Count':o.items.length,
+      'Slip No':o.slip,'Invoice Date':fmtDate(o.date),'Invoice Time':o.time,'Trans':o.trans,'Items (No. ×Qty)':itemsText(o.items),'Item Lines':NI(o.items).length,'Total Quantity':qtySum(o.items),
       'Net Amount (SAR)':Number(o.amount),'Customer Name':o.cname,'Customer Mobile':o.cmobile,'Store':s.name,'Region':s.region,'Status':SL[o.status],
       'Entered At':stamp(o.createdAt),'Entered By':o.createdBy,'Ready At':o.readyAt?stamp(o.readyAt):'','Receiver Name':c.name||'','Receiver Mobile':c.mobile||'',
       'Collection Date':c.date?fmtDate(c.date):'','Collection Time':c.time||'','Slip Image':!o.photo?'Missing':/^https?:/.test(o.photo)?o.photo:'Attached (in app)','Entered By Account':o.createdByEmail||'','Admin Edits':ed.length,'Last Admin Edit':ed.length?stamp(ed[ed.length-1].at):''}});
@@ -533,13 +546,13 @@ class Component extends DCLogic {
     const step=Number(p.minuteStep??1)||1;
     const hours=[...Array(24)].map((_,i)=>pad(i));const mins=[...Array(Math.ceil(60/step))].map((_,i)=>pad(i*step));
     const ph=(u,x)=>({flex:'none',backgroundImage:u?'url("'+u+'")':'none',backgroundSize:'cover',backgroundPosition:'center top',backgroundRepeat:'no-repeat',borderRadius:'var(--radius-sm)',boxShadow:'var(--shadow-sm)',cursor:'zoom-in',...x});
-    const vm=o=>{const s=STORE[o.store]||{};const n=o.items.length;return {...o,storeName:s.name,region:s.region,dateF:fmtDate(o.date),amountF:sar(o.amount),itemsLabel:n+' item'+(n===1?'':'s'),statusLabel:SL[o.status],tagClass:TAG[o.status],open:()=>this.setState({detailId:o.id,collect:null,cErrs:{}})}};
+    const vm=o=>{const s=STORE[o.store]||{};const n=NI(o.items).length,tq=qtySum(o.items);return {...o,itemList:NI(o.items),storeName:s.name,region:s.region,dateF:fmtDate(o.date),amountF:sar(o.amount),itemsLabel:n+' item'+(n===1?'':'s')+' · '+tq+' pcs',statusLabel:SL[o.status],tagClass:TAG[o.status],open:()=>this.setState({detailId:o.id,collect:null,cErrs:{}})}};
     const sorted=S.orders.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
-    const F=k=>e=>{let v=e.target.value;if(k==='amount')v=v.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1');if(k==='cmobile'||k==='trans')v=v.replace(/\D/g,'').slice(0,k==='cmobile'?10:12);this.setForm({[k]:v})};
+    const F=k=>e=>{let v=e.target.value;if(k==='amount')v=v.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1');if(k==='qtyDraft')v=v.replace(/\D/g,'').slice(0,4);if(k==='cmobile'||k==='trans')v=v.replace(/\D/g,'').slice(0,k==='cmobile'?10:12);this.setForm({[k]:v})};
     const C=k=>e=>{let v=e.target.value;if(k==='mobile')v=v.replace(/\D/g,'').slice(0,10);this.setState(s=>({collect:{...s.collect,[k]:v},cErrs:{}}))};
     // list
     let base=sorted;if(S.lStore!=='All')base=base.filter(o=>o.store===S.lStore);
-    const ql=S.q.trim().toLowerCase();if(ql)base=base.filter(o=>[o.slip,o.trans,o.cname,o.cmobile,...o.items].join(' ').toLowerCase().includes(ql));
+    const ql=S.q.trim().toLowerCase();if(ql)base=base.filter(o=>[o.slip,o.trans,o.cname,o.cmobile,...NI(o.items).map(x=>x.code)].join(' ').toLowerCase().includes(ql));
     const cnt=st=>base.filter(o=>o.status===st).length;
     const list=(S.statusF==='All'?base:base.filter(o=>o.status===S.statusF)).map(vm);
     const statusChips=[['All','All',base.length],['Pending','Awaiting',cnt('Pending')],['Ready','Ready',cnt('Ready')],['Collected','Collected',cnt('Collected')]].map(([id,label,n])=>({label,n,active:S.statusF===id,pick:()=>this.setState({statusF:id})}));
@@ -582,24 +595,25 @@ class Component extends DCLogic {
       roleIcon:ro.icon,roleLabel:ro.label,headerSub:isDelivery?(STORE[S.lStore]||{}).name+' · '+S.lRegion+' region':S.orders.length+' invoices on record',
       tabs:(tabsBy[role]||[]).map(([id,label,icon])=>({label,icon,color:S.view===id?'var(--color-accent)':'var(--color-neutral-500)',go:()=>{this.setState({view:id});window.scrollTo(0,0)}})),
       vNew:S.view==='new',vList:S.view==='list',vDash:S.view==='dash',
-      form:f,errs:S.errs,on:{slip:F('slip'),date:F('date'),trans:F('trans'),hh:F('hh'),mm:F('mm'),itemDraft:F('itemDraft'),amount:F('amount'),cname:F('cname'),cmobile:F('cmobile'),store:F('store')},
+      form:f,errs:S.errs,on:{slip:F('slip'),date:F('date'),trans:F('trans'),hh:F('hh'),mm:F('mm'),itemDraft:F('itemDraft'),qtyDraft:F('qtyDraft'),amount:F('amount'),cname:F('cname'),cmobile:F('cmobile'),store:F('store')},
       todayStr:today(),hours,mins,dupLive:dupLive?'Already registered on '+stamp(dupLive.createdAt)+' for '+STORE[dupLive.store].name+' — this slip cannot be added twice.':'',
       isEditing:!!S.editingId,formTitle:S.editingId?'Edit invoice':'New invoice',formSub:S.editingId?'Admin edit — changes are logged in the invoice history.':'Every field is required. Once submitted, the invoice is locked — only Admin can edit it.',
       submitLabel:S.editingId?'Save changes':'Submit invoice',
       itemKey:e=>{if(e.key==='Enter'){e.preventDefault();this.addItem()}},addItem:()=>this.addItem(),
-      hasItems:f.items.length>0,itemCountLabel:f.items.length?f.items.length+' item'+(f.items.length>1?'s':''):'',formItems:f.items.map(c=>({code:c,remove:()=>this.setForm({items:f.items.filter(x=>x!==c)})})),
+      hasItems:f.items.length>0,itemCountLabel:f.items.length?f.items.length+' item'+(f.items.length>1?'s':'')+' · '+qtySum(f.items)+' pcs':'',
+      formItems:NI(f.items).map((it,i,all)=>({code:it.code,qty:it.qty,remove:()=>this.setForm({items:all.filter((_,j)=>j!==i)}),inc:()=>this.setForm({items:all.map((x,j)=>j===i?{...x,qty:x.qty+1}:x)}),dec:()=>this.setForm({items:all.map((x,j)=>j===i?{...x,qty:Math.max(1,x.qty-1)}:x)})})),
       noPhoto:!f.photo,photoCta:'Take photo of slip',
       onPhoto:e=>{const file=e.target.files&&e.target.files[0];e.target.value='';if(!file)return;compress(file).then(url=>this.setForm({photo:url})).catch(()=>this.flash('Could not read that image'))},
       viewFormPhoto:()=>this.setState({viewer:f.photo}),viewDetailPhoto:()=>this.setState({viewer:od&&od.photo}),viewer:S.viewer,closeViewer:()=>this.setState({viewer:''}),
       storeOpts:STORES.map(s=>({id:s.id,label:s.name+' — Region: '+s.region})),
-      submit:()=>{let ff=f;if(ff.itemDraft.trim()){this.addItem();ff={...ff,items:[...ff.items,...ff.itemDraft.split(/[,\s]+/).map(x=>x.trim().toUpperCase()).filter(x=>x&&!ff.items.includes(x))],itemDraft:''}}
+      submit:()=>{let ff=f;if(ff.itemDraft.trim())ff=this.mergeItems(ff);
         const e=this.validate(ff);const n=Object.keys(e).length;if(n){this.setState({errs:e,form:ff});this.flash(n===1&&e.slip&&e.slip.startsWith('Duplicate')?'Duplicate slip — not saved.':n+' field'+(n>1?'s need':' needs')+' attention');window.scrollTo(0,0);return}this.setState({confirm:true,form:ff})},
       cancelEdit:()=>this.setState({editingId:null,form:emptyForm(),errs:{},view:'list'}),
       confirmOpen:S.confirm,confirmTitle:S.editingId?'Save admin changes?':'Submit this invoice?',confirmAmount:sar(f.amount),confirmStore:f.store?STORE[f.store].name+' · '+STORE[f.store].region:'',
       confirmNote:S.editingId?'The edit will be recorded in the invoice history.':'After submitting, Order entry cannot change this invoice. It goes straight to the store’s delivery queue.',
       closeConfirm:()=>this.setState({confirm:false}),
       doSubmit:()=>{if(S.busy)return;const e=this.validate(f);if(Object.keys(e).length){this.setState({confirm:false,errs:e});return}
-        const now=new Date().toISOString();const rec={slip:f.slip.trim().toUpperCase(),date:f.date,trans:f.trans.trim(),time:f.hh+':'+f.mm,items:f.items,amount:Math.round(parseFloat(f.amount)*100)/100,cname:f.cname.trim(),cmobile:f.cmobile,photo:f.photo,store:f.store};
+        const now=new Date().toISOString();const rec={slip:f.slip.trim().toUpperCase(),date:f.date,trans:f.trans.trim(),time:f.hh+':'+f.mm,items:NI(f.items),amount:Math.round(parseFloat(f.amount)*100)/100,cname:f.cname.trim(),cmobile:f.cmobile,photo:f.photo,store:f.store};
         if(S.editingId){const old=S.orders.find(o=>o.id===S.editingId);const labels={slip:'slip',date:'date',trans:'trans',time:'time',items:'items',amount:'amount',cname:'customer',cmobile:'mobile',photo:'photo',store:'store'};
           const ch=Object.keys(labels).filter(k=>JSON.stringify(old[k])!==JSON.stringify(rec[k])).map(k=>labels[k]);
           const hist={at:now,by:'Admin',text:'Edited by Admin'+(ch.length?' — '+ch.join(', '):' — no changes')};const eid=S.editingId;
@@ -621,7 +635,7 @@ class Component extends DCLogic {
       confirmCollect:()=>{const c=S.collect;const e={};if(!c.name.trim())e.name='Enter the receiver’s name';if(!MOB.test(c.mobile))e.mobile='Saudi mobile — 10 digits starting 05';if(!c.date)e.date='Pick the collection date';else if(c.date<od.date)e.date='Cannot be before the invoice date';if(!c.hh||!c.mm)e.time='Select hour and minute';
         if(Object.keys(e).length){this.setState({cErrs:e});return}const now=new Date().toISOString();
         if(S.busy)return;this.run(async()=>{await this.patchOrder(od.id,{status:'Collected',collected:{name:c.name.trim(),mobile:c.mobile,date:c.date,time:c.hh+':'+c.mm,at:now}},{at:now,by:this.roleName(),text:'Collected by '+c.name.trim()});this.setState({collect:null});this.flash('Collection recorded')})},
-      editDetail:()=>{const [hh,mm]=(od.time||':').split(':');this.setState({editingId:od.id,detailId:null,view:'new',errs:{},form:{slip:od.slip,date:od.date,trans:od.trans,hh,mm,itemDraft:'',items:[...od.items],amount:String(od.amount),cname:od.cname,cmobile:od.cmobile,photo:od.photo,store:od.store}});window.scrollTo(0,0)},
+      editDetail:()=>{const [hh,mm]=(od.time||':').split(':');this.setState({editingId:od.id,detailId:null,view:'new',errs:{},form:{slip:od.slip,date:od.date,trans:od.trans,hh,mm,itemDraft:'',items:NI(od.items),qtyDraft:'1',amount:String(od.amount),cname:od.cname,cmobile:od.cmobile,photo:od.photo,store:od.store}});window.scrollTo(0,0)},
       toast:S.toast,delOpen:!!S.delConfirm&&!!od,delLabel:S.busy?'Deleting…':'Delete invoice',askDelete:()=>this.setState({delConfirm:true}),closeDelete:()=>this.setState({delConfirm:false}),
       doDelete:()=>{if(S.busy||role!=='admin')return;const id=od.id;this.run(async()=>{await this.deleteOrder(id);this.setState({delConfirm:false,detailId:null});this.flash('Invoice deleted')}).then(()=>this.setState({delConfirm:false}))},
       formPhotoStyle:ph(f.photo,{width:84,height:112}),detailPhotoStyle:ph(od&&od.photo,{width:96,height:132}),viewerStyle:ph(S.viewer,{width:'100%',height:'92vh',backgroundSize:'contain',backgroundPosition:'center',boxShadow:'none',cursor:'zoom-out'})
