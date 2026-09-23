@@ -13,23 +13,25 @@
 <script src="_ds/nocturne-d4c5b88c-0472-4e96-b2a2-9c91ab25596b/_ds_bundle.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<style>:root{color-scheme:dark}body{margin:0;-webkit-tap-highlight-color:transparent}a{color:var(--color-accent)}a:hover{color:var(--color-accent-300)}select.input{appearance:none;-webkit-appearance:none}</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap">
+<style>[dir=rtl]{--font-heading:"Inter","IBM Plex Sans Arabic",system-ui,sans-serif;--font-body:"Inter","IBM Plex Sans Arabic",system-ui,sans-serif;font-family:var(--font-body)}:root{color-scheme:dark}body{margin:0;-webkit-tap-highlight-color:transparent}a{color:var(--color-accent)}a:hover{color:var(--color-accent-300)}select.input{appearance:none;-webkit-appearance:none}</style>
 </helmet>
-<div style="min-height:100vh;display:flex;justify-content:center">
+<div dir="{{ dir }}" lang="{{ lang }}" style="min-height:100vh;display:flex;justify-content:center">
 <div style="position:relative;width:100%;max-width:440px;min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--color-surface) -30%,var(--color-bg) 26%);box-shadow:var(--shadow-sm)">
 
 <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+<button class="btn btn-secondary" onClick="{{ toggleLang }}" style="position:absolute;top:14px;inset-inline-end:14px;min-height:44px;min-width:56px;z-index:2"><i class="ph ph-translate"></i>{{ langBtn }}</button>
 <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;padding:40px 22px">
   <div style="display:flex;flex-direction:column;gap:10px">
     <div style="display:flex;align-items:center;gap:10px;color:var(--color-accent)"><i class="ph ph-receipt" style="font-size:22px"></i><span style="width:32px;height:1px;background:var(--color-accent)"></span><i class="ph ph-package" style="font-size:22px"></i></div>
-    <h2 style="margin:0">Invoice to Delivery</h2>
-    <p class="text-muted" style="margin:0;font-size:14px;text-wrap:pretty">Register a customer slip, hand it to the store, and track it until the customer collects.</p>
+    <h2 style="margin:0">{{ t.appName }}</h2>
+    <p class="text-muted" style="margin:0;font-size:14px;text-wrap:pretty">{{ t.appDesc }}</p>
   </div>
   <sc-if value="{{ showRoles }}" hint-placeholder-val="{{ true }}">
   <div style="display:flex;flex-direction:column;gap:8px">
-    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500)">Sign in as</div>
+    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500)">{{ t.signInAs }}</div>
     <sc-for list="{{ roles }}" as="r" hint-placeholder-count="3">
-      <button onClick="{{ r.pick }}" style="display:flex;align-items:center;gap:14px;min-height:64px;padding:12px 14px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid {{ r.border }};color:var(--color-text);text-align:left;cursor:pointer;font:inherit">
+      <button onClick="{{ r.pick }}" style="display:flex;align-items:center;gap:14px;min-height:64px;padding:12px 14px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid {{ r.border }};color:var(--color-text);text-align:start;cursor:pointer;font:inherit">
         <i class="ph {{ r.icon }}" style="font-size:22px;color:{{ r.iconColor }}"></i>
         <span style="display:flex;flex-direction:column;flex:1;gap:2px"><span style="font-size:15px;font-weight:500">{{ r.label }}</span><span class="text-muted" style="font-size:12px;line-height:1.35">{{ r.desc }}</span></span>
         <sc-if value="{{ r.active }}"><i class="ph ph-check-circle" style="color:var(--color-accent);font-size:20px"></i></sc-if>
@@ -38,7 +40,7 @@
   </div>
   </sc-if>
   <sc-if value="{{ cloudLogin }}" hint-placeholder-val="{{ false }}">
-    <div class="field"><label>User ID</label><input class="input" value="{{ userId }}" onChange="{{ onUserId }}" placeholder="e.g. thager01" autocapitalize="none" autocomplete="username" style="min-height:48px;font-size:16px"></div>
+    <div class="field"><label>{{ t.userId }}</label><input class="input" value="{{ userId }}" onChange="{{ onUserId }}" placeholder="e.g. thager01" autocapitalize="none" autocomplete="username" style="min-height:48px;font-size:16px"></div>
   </sc-if>
   <sc-if value="{{ requirePin }}" hint-placeholder-val="{{ true }}">
     <div class="field"><label>{{ pinLabel }}</label><input class="input" type="password" inputmode="{{ pinMode }}" maxlength="{{ pinMax }}" value="{{ pin }}" onChange="{{ onPin }}" onKeyDown="{{ onPinKey }}" placeholder="{{ pinPh }}" style="min-height:48px;font-size:16px"></div>
@@ -46,7 +48,7 @@
   <sc-if value="{{ loginErr }}"><div style="display:flex;gap:6px;align-items:center;font-size:13px;color:var(--color-accent-200)"><i class="ph ph-warning"></i><span>{{ loginErr }}</span></div></sc-if>
   <div style="display:flex;flex-direction:column;gap:10px">
     <button class="btn btn-primary" onClick="{{ login }}" disabled="{{ loginDisabled }}" style="min-height:48px;width:100%;font-size:15px">{{ loginLabel }}</button>
-    <sc-if value="{{ showDemoPins }}"><p class="text-muted" style="font-size:12px;margin:0">Demo PINs — Order 1111 · Delivery 2222 · Admin 9999</p></sc-if>
+    <sc-if value="{{ showDemoPins }}"><p class="text-muted" style="font-size:12px;margin:0">{{ t.demoPins }}</p></sc-if>
   </div>
 </div>
 </sc-if>
@@ -58,6 +60,7 @@
     <span style="font-size:15px;font-weight:500">{{ roleLabel }}</span>
     <span class="text-muted" style="font-size:11px">{{ headerSub }}</span>
   </div>
+  <button class="btn btn-secondary" onClick="{{ toggleLang }}" aria-label="Language" style="min-height:44px;flex:none;padding-inline:10px">{{ langBtn }}</button>
   <span class="tag tag-neutral" style="white-space:nowrap;flex:none">{{ modeLabel }}</span>
   <button class="btn btn-secondary btn-icon" onClick="{{ logout }}" aria-label="Sign out" style="width:44px;height:44px"><i class="ph ph-sign-out" style="font-size:18px"></i></button>
 </header>
@@ -71,44 +74,44 @@
   </div>
 
   <div class="card elev-sm" style="gap:12px;padding:14px">
-    <div class="card-kicker">Slip</div>
-    <div class="field"><label>Slip No.</label>
-      <input class="input" value="{{ form.slip }}" onChange="{{ on.slip }}" placeholder="000000RY59000022354" autocapitalize="characters" style="min-height:44px;font-family:ui-monospace,Menlo,monospace;letter-spacing:.02em">
+    <div class="card-kicker">{{ t.slipK }}</div>
+    <div class="field"><label>{{ t.slipNo }}</label>
+      <input class="input" value="{{ form.slip }}" onChange="{{ on.slip }}" placeholder="000000RY59000022354" autocapitalize="characters" dir="ltr" style="min-height:44px;font-family:ui-monospace,Menlo,monospace;letter-spacing:.02em">
       <sc-if value="{{ errs.slip }}"><div style="display:flex;gap:6px;margin-top:6px;font-size:12px;color:var(--color-accent-200)"><i class="ph ph-warning" style="margin-top:2px"></i><span>{{ errs.slip }}</span></div></sc-if>
       <sc-if value="{{ dupLive }}"><div style="display:flex;gap:6px;margin-top:6px;font-size:12px;color:var(--color-accent-200)"><i class="ph ph-prohibit" style="margin-top:2px"></i><span>{{ dupLive }}</span></div></sc-if>
     </div>
     <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px">
-      <div class="field"><label>Date</label>
+      <div class="field"><label>{{ t.date }}</label>
         <input class="input" type="date" value="{{ form.date }}" onChange="{{ on.date }}" max="{{ todayStr }}" style="min-height:44px;color-scheme:dark">
         <sc-if value="{{ errs.date }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.date }}</div></sc-if>
       </div>
-      <div class="field"><label>Trans</label>
-        <input class="input" inputmode="numeric" value="{{ form.trans }}" onChange="{{ on.trans }}" placeholder="37133" style="min-height:44px;font-family:ui-monospace,Menlo,monospace">
+      <div class="field"><label>{{ t.trans }}</label>
+        <input class="input" inputmode="numeric" value="{{ form.trans }}" onChange="{{ on.trans }}" placeholder="37133" dir="ltr" style="min-height:44px;font-family:ui-monospace,Menlo,monospace">
         <sc-if value="{{ errs.trans }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.trans }}</div></sc-if>
       </div>
     </div>
-    <div class="field"><label>Time</label>
+    <div class="field"><label>{{ t.time }}</label>
       <div style="display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center">
-        <select class="input" value="{{ form.hh }}" onChange="{{ on.hh }}" style="min-height:44px"><option value="">Hour</option><sc-for list="{{ hours }}" as="h"><option value="{{ h }}">{{ h }}</option></sc-for></select>
+        <select class="input" value="{{ form.hh }}" onChange="{{ on.hh }}" style="min-height:44px"><option value="">{{ t.hour }}</option><sc-for list="{{ hours }}" as="h"><option value="{{ h }}">{{ h }}</option></sc-for></select>
         <span class="text-muted">:</span>
-        <select class="input" value="{{ form.mm }}" onChange="{{ on.mm }}" style="min-height:44px"><option value="">Min</option><sc-for list="{{ mins }}" as="m"><option value="{{ m }}">{{ m }}</option></sc-for></select>
+        <select class="input" value="{{ form.mm }}" onChange="{{ on.mm }}" style="min-height:44px"><option value="">{{ t.min }}</option><sc-for list="{{ mins }}" as="m"><option value="{{ m }}">{{ m }}</option></sc-for></select>
       </div>
       <sc-if value="{{ errs.time }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.time }}</div></sc-if>
     </div>
   </div>
 
   <div class="card elev-sm" style="gap:12px;padding:14px">
-    <div style="display:flex;align-items:baseline;justify-content:space-between"><div class="card-kicker" style="white-space:nowrap;flex:none">Items &amp; amount</div><span class="text-muted" style="font-size:12px;white-space:nowrap">{{ itemCountLabel }}</span></div>
-    <div class="field"><label>Item numbers</label>
+    <div style="display:flex;align-items:baseline;justify-content:space-between"><div class="card-kicker" style="white-space:nowrap;flex:none">{{ t.itemsAmount }}</div><span class="text-muted" style="font-size:12px;white-space:nowrap">{{ itemCountLabel }}</span></div>
+    <div class="field"><label>{{ t.itemNumbers }}</label>
       <div style="display:flex;gap:8px">
-        <input class="input" value="{{ form.itemDraft }}" onChange="{{ on.itemDraft }}" onKeyDown="{{ itemKey }}" placeholder="Item no. e.g. 26-1438" style="min-height:44px;flex:1;min-width:0;font-family:ui-monospace,Menlo,monospace">
-        <input class="input" inputmode="numeric" value="{{ form.qtyDraft }}" onChange="{{ on.qtyDraft }}" onKeyDown="{{ itemKey }}" aria-label="Quantity" placeholder="Qty" style="min-height:44px;width:60px;flex:none;text-align:center;font-variant-numeric:tabular-nums">
-        <button class="btn btn-secondary" onClick="{{ addItem }}" style="min-height:44px;flex:none;min-width:64px"><i class="ph ph-plus"></i>Add</button>
+        <input class="input" value="{{ form.itemDraft }}" onChange="{{ on.itemDraft }}" dir="ltr" onKeyDown="{{ itemKey }}" placeholder="{{ t.itemPh }}" style="min-height:44px;flex:1;min-width:0;font-family:ui-monospace,Menlo,monospace">
+        <input class="input" inputmode="numeric" value="{{ form.qtyDraft }}" onChange="{{ on.qtyDraft }}" onKeyDown="{{ itemKey }}" aria-label="Quantity" placeholder="{{ t.qty }}" style="min-height:44px;width:60px;flex:none;text-align:center;font-variant-numeric:tabular-nums">
+        <button class="btn btn-secondary" onClick="{{ addItem }}" style="min-height:44px;flex:none;min-width:64px"><i class="ph ph-plus"></i>{{ t.add }}</button>
       </div>
       <sc-if value="{{ hasItems }}">
         <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
           <sc-for list="{{ formItems }}" as="it">
-            <div style="display:flex;align-items:center;gap:8px;padding:4px 4px 4px 12px;border-radius:var(--radius-md);background:var(--color-neutral-900)">
+            <div style="display:flex;align-items:center;gap:8px;padding:4px;padding-inline-start:12px;border-radius:var(--radius-md);background:var(--color-neutral-900)">
               <span style="flex:1;min-width:0;font-family:ui-monospace,Menlo,monospace;font-size:13px;overflow:hidden;text-overflow:ellipsis">{{ it.code }}</span>
               <div style="display:flex;align-items:center;border:1px solid var(--color-divider);border-radius:var(--radius-md)">
                 <button onClick="{{ it.dec }}" aria-label="Decrease quantity" style="display:grid;place-items:center;width:40px;height:40px;border:0;background:transparent;color:var(--color-text);cursor:pointer"><i class="ph ph-minus"></i></button>
@@ -122,43 +125,43 @@
       </sc-if>
       <sc-if value="{{ errs.items }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.items }}</div></sc-if>
     </div>
-    <div class="field"><label>Total invoice amount — net after savings &amp; discounts</label>
+    <div class="field"><label>{{ t.totalAmt }}</label>
       <div style="position:relative">
-        <span class="text-muted" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px">SAR</span>
-        <input class="input" inputmode="decimal" value="{{ form.amount }}" onChange="{{ on.amount }}" placeholder="5,771.00" style="min-height:44px;padding-left:46px;font-size:16px;font-variant-numeric:tabular-nums">
+        <span class="text-muted" style="position:absolute;inset-inline-start:12px;top:50%;transform:translateY(-50%);font-size:12px">{{ t.sar }}</span>
+        <input class="input" inputmode="decimal" value="{{ form.amount }}" onChange="{{ on.amount }}" placeholder="5,771.00" style="min-height:44px;padding-inline-start:46px;font-size:16px;font-variant-numeric:tabular-nums">
       </div>
       <sc-if value="{{ errs.amount }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.amount }}</div></sc-if>
     </div>
   </div>
 
   <div class="card elev-sm" style="gap:12px;padding:14px">
-    <div class="card-kicker">Customer</div>
-    <div class="field"><label>Customer name</label>
-      <input class="input" value="{{ form.cname }}" onChange="{{ on.cname }}" placeholder="Full name" autocomplete="off" style="min-height:44px">
+    <div class="card-kicker">{{ t.customerK }}</div>
+    <div class="field"><label>{{ t.customerName }}</label>
+      <input class="input" value="{{ form.cname }}" onChange="{{ on.cname }}" placeholder="{{ t.fullName }}" autocomplete="off" style="min-height:44px">
       <sc-if value="{{ errs.cname }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.cname }}</div></sc-if>
     </div>
-    <div class="field"><label>Mobile number</label>
-      <input class="input" type="tel" inputmode="numeric" value="{{ form.cmobile }}" onChange="{{ on.cmobile }}" placeholder="05XXXXXXXX" style="min-height:44px;font-variant-numeric:tabular-nums;letter-spacing:.04em">
+    <div class="field"><label>{{ t.mobileNumber }}</label>
+      <input class="input" type="tel" inputmode="numeric" value="{{ form.cmobile }}" onChange="{{ on.cmobile }}" placeholder="05XXXXXXXX" dir="ltr" style="min-height:44px;font-variant-numeric:tabular-nums;letter-spacing:.04em">
       <sc-if value="{{ errs.cmobile }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.cmobile }}</div></sc-if>
     </div>
   </div>
 
   <div class="card elev-sm" style="gap:12px;padding:14px">
-    <div class="card-kicker">Slip photo</div>
+    <div class="card-kicker">{{ t.slipPhoto }}</div>
     <sc-if value="{{ noPhoto }}">
       <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:132px;border:1px dashed var(--color-neutral-700);border-radius:var(--radius-md);cursor:pointer;color:var(--color-accent);text-align:center;padding:16px">
         <input type="file" accept="image/*" capture="environment" onChange="{{ onPhoto }}" style="display:none">
         <i class="ph ph-camera" style="font-size:28px"></i>
         <span style="font-size:14px;font-weight:500">{{ photoCta }}</span>
-        <span class="text-muted" style="font-size:12px">Opens the camera on phones · compressed before saving</span>
+        
       </label>
     </sc-if>
     <sc-if value="{{ form.photo }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;gap:12px;align-items:center">
         <div role="img" aria-label="Slip" onClick="{{ viewFormPhoto }}" style="{{ formPhotoStyle }}"></div>
         <div style="display:flex;flex-direction:column;gap:6px;flex:1">
-          <span style="display:flex;gap:6px;align-items:center;font-size:13px"><i class="ph ph-check-circle" style="color:var(--color-accent)"></i>Slip attached</span>
-          <label class="btn btn-secondary" style="min-height:40px;align-self:flex-start"><input type="file" accept="image/*" capture="environment" onChange="{{ onPhoto }}" style="display:none"><i class="ph ph-arrows-clockwise"></i>Retake</label>
+          <span style="display:flex;gap:6px;align-items:center;font-size:13px"><i class="ph ph-check-circle" style="color:var(--color-accent)"></i>{{ t.slipAttached }}</span>
+          <label class="btn btn-secondary" style="min-height:40px;align-self:flex-start"><input type="file" accept="image/*" capture="environment" onChange="{{ onPhoto }}" style="display:none"><i class="ph ph-arrows-clockwise"></i>{{ t.retake }}</label>
         </div>
       </div>
     </sc-if>
@@ -166,11 +169,11 @@
   </div>
 
   <div class="card elev-sm" style="gap:12px;padding:14px">
-    <div class="card-kicker">Assign store</div>
+    <div class="card-kicker">{{ t.assignStore }}</div>
     <div class="field">
       <div style="position:relative">
-        <select class="input" value="{{ form.store }}" onChange="{{ on.store }}" style="min-height:44px;padding-right:34px"><option value="">Select store</option><sc-for list="{{ storeOpts }}" as="s"><option value="{{ s.id }}">{{ s.label }}</option></sc-for></select>
-        <i class="ph ph-caret-down" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-neutral-500)"></i>
+        <select class="input" value="{{ form.store }}" onChange="{{ on.store }}" style="min-height:44px;padding-inline-end:34px"><option value="">{{ t.selectStore }}</option><sc-for list="{{ storeOpts }}" as="s"><option value="{{ s.id }}">{{ s.label }}</option></sc-for></select>
+        <i class="ph ph-caret-down" style="position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-neutral-500)"></i>
       </div>
       <sc-if value="{{ errs.store }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.store }}</div></sc-if>
     </div>
@@ -178,7 +181,7 @@
 
   <div style="display:flex;flex-direction:column;gap:8px">
     <button class="btn btn-primary" onClick="{{ submit }}" style="min-height:50px;width:100%;font-size:15px"><i class="ph ph-lock-simple"></i>{{ submitLabel }}</button>
-    <sc-if value="{{ isEditing }}"><button class="btn btn-secondary" onClick="{{ cancelEdit }}" style="min-height:44px;width:100%">Cancel edit</button></sc-if>
+    <sc-if value="{{ isEditing }}"><button class="btn btn-secondary" onClick="{{ cancelEdit }}" style="min-height:44px;width:100%">{{ t.cancelEdit }}</button></sc-if>
   </div>
 </sc-if>
 
@@ -189,97 +192,97 @@
   </div>
   <sc-if value="{{ isDelivery }}">
     <div class="card elev-sm" style="gap:10px;padding:14px">
-      <div class="card-kicker">Your store</div>
+      <div class="card-kicker">{{ t.yourStore }}</div>
       <div class="seg" style="display:flex">
         <sc-for list="{{ lRegions }}" as="r"><label class="seg-opt" style="flex:1;justify-content:center;min-height:40px"><input type="radio" name="lreg" checked="{{ r.active }}" onChange="{{ r.pick }}"><span>{{ r.label }}</span></label></sc-for>
       </div>
       <div style="position:relative">
-        <select class="input" value="{{ lStore }}" onChange="{{ onLStore }}" style="min-height:44px;padding-right:34px"><sc-for list="{{ lStoreOpts }}" as="s"><option value="{{ s.id }}">{{ s.label }}</option></sc-for></select>
-        <i class="ph ph-caret-down" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-neutral-500)"></i>
+        <select class="input" value="{{ lStore }}" onChange="{{ onLStore }}" style="min-height:44px;padding-inline-end:34px"><sc-for list="{{ lStoreOpts }}" as="s"><option value="{{ s.id }}">{{ s.label }}</option></sc-for></select>
+        <i class="ph ph-caret-down" style="position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-neutral-500)"></i>
       </div>
     </div>
   </sc-if>
   <sc-if value="{{ notDelivery }}">
     <div style="position:relative">
-      <select class="input" value="{{ lStore }}" onChange="{{ onLStore }}" style="min-height:44px;padding-right:34px"><sc-for list="{{ lStoreOpts }}" as="s"><option value="{{ s.id }}">{{ s.label }}</option></sc-for></select>
-      <i class="ph ph-caret-down" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-neutral-500)"></i>
+      <select class="input" value="{{ lStore }}" onChange="{{ onLStore }}" style="min-height:44px;padding-inline-end:34px"><sc-for list="{{ lStoreOpts }}" as="s"><option value="{{ s.id }}">{{ s.label }}</option></sc-for></select>
+      <i class="ph ph-caret-down" style="position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-neutral-500)"></i>
     </div>
   </sc-if>
   <div style="position:relative">
-    <i class="ph ph-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--color-neutral-500)"></i>
-    <input class="input" value="{{ q }}" onChange="{{ onQ }}" placeholder="Slip, trans, customer, mobile, item" style="min-height:44px;padding-left:36px">
+    <i class="ph ph-magnifying-glass" style="position:absolute;inset-inline-start:12px;top:50%;transform:translateY(-50%);color:var(--color-neutral-500)"></i>
+    <input class="input" value="{{ q }}" onChange="{{ onQ }}" placeholder="{{ t.searchPh }}" style="min-height:44px;padding-inline-start:36px">
   </div>
   <div class="seg" style="display:flex">
     <sc-for list="{{ statusChips }}" as="c"><label class="seg-opt" style="flex:1;justify-content:center;min-height:40px;padding:6px 4px;font-size:12px;gap:4px"><input type="radio" name="stf" checked="{{ c.active }}" onChange="{{ c.pick }}"><span>{{ c.label }}</span><span class="text-muted">{{ c.n }}</span></label></sc-for>
   </div>
   <div style="display:flex;flex-direction:column;gap:8px">
     <sc-for list="{{ list }}" as="o" hint-placeholder-count="4">
-      <button onClick="{{ o.open }}" class="card elev-sm" style="border:0;text-align:left;color:var(--color-text);font:inherit;cursor:pointer;padding:12px 14px;gap:6px">
+      <button onClick="{{ o.open }}" class="card elev-sm" style="border:0;text-align:start;color:var(--color-text);font:inherit;cursor:pointer;padding:12px 14px;gap:6px">
         <div style="display:flex;align-items:center;gap:8px">
           <span style="flex:1;font-family:ui-monospace,Menlo,monospace;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.slip }}</span>
           <span class="tag {{ o.tagClass }}">{{ o.statusLabel }}</span>
         </div>
         <div style="display:flex;align-items:baseline;gap:8px">
           <span style="flex:1;font-size:15px;font-weight:500">{{ o.cname }}</span>
-          <span style="font-size:15px;font-variant-numeric:tabular-nums">{{ o.amountF }}<span class="text-muted" style="font-size:11px;margin-left:3px">SAR</span></span>
+          <span style="font-size:15px;font-variant-numeric:tabular-nums">{{ o.amountF }}<span class="text-muted" style="font-size:11px;margin-inline-start:3px">{{ t.sar }}</span></span>
         </div>
         <div class="card-meta" style="flex-wrap:wrap"><i class="ph ph-storefront"></i><span>{{ o.storeName }} · {{ o.region }}</span><span>·</span><span>{{ o.dateF }} {{ o.time }}</span><span>·</span><span>{{ o.itemsLabel }}</span></div>
       </button>
     </sc-for>
-    <sc-if value="{{ listEmpty }}"><div class="text-muted" style="padding:32px 4px;font-size:13px;text-align:left">No invoices match these filters.</div></sc-if>
+    <sc-if value="{{ listEmpty }}"><div class="text-muted" style="padding:32px 4px;font-size:13px;text-align:start">{{ t.noMatch }}</div></sc-if>
   </div>
 </sc-if>
 
 <sc-if value="{{ vDash }}">
   <div style="display:flex;flex-direction:column;gap:4px">
-    <h3 style="margin:0">Dashboard</h3>
+    <h3 style="margin:0">{{ t.dashboard }}</h3>
     <p class="text-muted" style="margin:0;font-size:13px">{{ dashSub }}</p>
   </div>
   <div class="seg" style="display:flex">
     <sc-for list="{{ dRegions }}" as="r"><label class="seg-opt" style="flex:1;justify-content:center;min-height:40px"><input type="radio" name="dreg" checked="{{ r.active }}" onChange="{{ r.pick }}"><span>{{ r.label }}</span></label></sc-for>
   </div>
   <div style="position:relative">
-    <select class="input" value="{{ dashStore }}" onChange="{{ onDashStore }}" style="min-height:44px;padding-right:34px"><sc-for list="{{ dStoreOpts }}" as="s"><option value="{{ s.id }}">{{ s.label }}</option></sc-for></select>
-    <i class="ph ph-caret-down" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-neutral-500)"></i>
+    <select class="input" value="{{ dashStore }}" onChange="{{ onDashStore }}" style="min-height:44px;padding-inline-end:34px"><sc-for list="{{ dStoreOpts }}" as="s"><option value="{{ s.id }}">{{ s.label }}</option></sc-for></select>
+    <i class="ph ph-caret-down" style="position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-neutral-500)"></i>
   </div>
   <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px">
     <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
-      <button onClick="{{ k.go }}" class="card elev-sm" style="border:0;text-align:left;color:var(--color-text);font:inherit;cursor:pointer;padding:12px 14px;gap:2px">
+      <button onClick="{{ k.go }}" class="card elev-sm" style="border:0;text-align:start;color:var(--color-text);font:inherit;cursor:pointer;padding:12px 14px;gap:2px">
         <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-neutral-400)"><span style="width:8px;height:8px;border-radius:2px;background:{{ k.color }}"></span>{{ k.label }}</span>
         <span style="font-size:30px;line-height:1.1;font-weight:500;font-variant-numeric:tabular-nums">{{ k.n }}</span>
       </button>
     </sc-for>
   </div>
   <div class="card elev-sm" style="padding:14px;gap:10px">
-    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px"><span class="card-kicker">Net invoice value</span><span class="text-muted" style="font-size:12px">{{ openValueLabel }}</span></div>
-    <div style="font-size:26px;font-weight:500;font-variant-numeric:tabular-nums">{{ totalValue }} <span class="text-muted" style="font-size:13px">SAR</span></div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px"><span class="card-kicker">{{ t.netValue }}</span><span class="text-muted" style="font-size:12px">{{ openValueLabel }}</span></div>
+    <div style="font-size:26px;font-weight:500;font-variant-numeric:tabular-nums">{{ totalValue }} <span class="text-muted" style="font-size:13px">{{ t.sar }}</span></div>
     <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--color-neutral-900);gap:2px">
       <span style="width:{{ pipe.p }};background:var(--color-neutral-600)"></span><span style="width:{{ pipe.r }};background:var(--color-accent)"></span><span style="width:{{ pipe.c }};background:var(--color-accent-300)"></span>
     </div>
   </div>
   <div style="display:flex;flex-direction:column;gap:8px">
-    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500)">By store</div>
+    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500)">{{ t.byStore }}</div>
     <sc-for list="{{ byStore }}" as="s" hint-placeholder-count="3">
       <div class="card elev-sm" style="padding:12px 14px;gap:8px">
         <div style="display:flex;align-items:baseline;gap:8px"><span style="flex:1;font-size:15px;font-weight:500">{{ s.name }}</span><span class="text-muted" style="font-size:12px">{{ s.region }}</span></div>
         <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--color-neutral-900);gap:2px">
           <span style="width:{{ s.pp }};background:var(--color-neutral-600)"></span><span style="width:{{ s.rp }};background:var(--color-accent)"></span><span style="width:{{ s.cp }};background:var(--color-accent-300)"></span>
         </div>
-        <div class="card-meta" style="gap:12px;font-size:12px"><span>{{ s.p }} awaiting</span><span>{{ s.r }} ready</span><span>{{ s.c }} collected</span><span style="margin-left:auto;font-variant-numeric:tabular-nums">{{ s.value }} SAR</span></div>
+        <div class="card-meta" style="gap:12px;font-size:12px"><span>{{ s.p }} {{ t.awaitingS }}</span><span>{{ s.r }} {{ t.readyS }}</span><span>{{ s.c }} {{ t.collectedS }}</span><span style="margin-inline-start:auto;font-variant-numeric:tabular-nums">{{ s.value }} {{ t.sar }}</span></div>
       </div>
     </sc-for>
   </div>
   <div class="card elev-sm" style="padding:14px;gap:10px">
-    <div style="display:flex;align-items:center;gap:10px"><i class="ph ph-microsoft-excel-logo" style="font-size:22px;color:var(--color-accent)"></i><div style="display:flex;flex-direction:column;flex:1"><span style="font-size:15px;font-weight:500">Excel report</span><span class="text-muted" style="font-size:12px">{{ exportSub }}</span></div></div>
+    <div style="display:flex;align-items:center;gap:10px"><i class="ph ph-microsoft-excel-logo" style="font-size:22px;color:var(--color-accent)"></i><div style="display:flex;flex-direction:column;flex:1"><span style="font-size:15px;font-weight:500">{{ t.excel }}</span><span class="text-muted" style="font-size:12px">{{ exportSub }}</span></div></div>
     <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px">
-      <button class="btn btn-primary" onClick="{{ exportFiltered }}" style="min-height:44px">Filtered</button>
-      <button class="btn btn-secondary" onClick="{{ exportAll }}" style="min-height:44px">All raw data</button>
+      <button class="btn btn-primary" onClick="{{ exportFiltered }}" style="min-height:44px">{{ t.filtered }}</button>
+      <button class="btn btn-secondary" onClick="{{ exportAll }}" style="min-height:44px">{{ t.allRaw }}</button>
     </div>
   </div>
   <div style="display:flex;flex-direction:column;gap:2px">
-    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500);margin-bottom:6px">Recent activity</div>
+    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500);margin-bottom:6px">{{ t.recent }}</div>
     <sc-for list="{{ recent }}" as="a" hint-placeholder-count="5">
-      <button onClick="{{ a.open }}" style="display:flex;gap:10px;align-items:flex-start;padding:8px 2px;border:0;background:transparent;color:var(--color-text);font:inherit;text-align:left;cursor:pointer;min-height:44px">
+      <button onClick="{{ a.open }}" style="display:flex;gap:10px;align-items:flex-start;padding:8px 2px;border:0;background:transparent;color:var(--color-text);font:inherit;text-align:start;cursor:pointer;min-height:44px">
         <i class="ph {{ a.icon }}" style="font-size:16px;margin-top:2px;color:var(--color-accent)"></i>
         <span style="display:flex;flex-direction:column;flex:1;gap:1px"><span style="font-size:13px">{{ a.text }}</span><span class="text-muted" style="font-size:11px">{{ a.when }} · {{ a.slipShort }} · {{ a.storeName }}</span></span>
       </button>
@@ -301,67 +304,67 @@
 <div style="position:fixed;inset:0;z-index:20;display:flex;justify-content:center;background:color-mix(in srgb,var(--color-neutral-900) 60%,transparent)">
 <div style="width:100%;max-width:440px;height:100%;overflow:auto;background:var(--color-bg);box-shadow:var(--shadow-md);display:flex;flex-direction:column">
   <div style="position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:10px 12px;background:color-mix(in srgb,var(--color-bg) 90%,transparent);backdrop-filter:blur(10px)">
-    <button class="btn btn-secondary btn-icon" onClick="{{ closeDetail }}" aria-label="Back" style="width:44px;height:44px"><i class="ph ph-caret-left" style="font-size:18px"></i></button>
-    <span style="flex:1;font-size:15px;font-weight:500">Invoice</span>
+    <button class="btn btn-secondary btn-icon" onClick="{{ closeDetail }}" aria-label="Back" style="width:44px;height:44px"><i class="ph {{ backIcon }}" style="font-size:18px"></i></button>
+    <span style="flex:1;font-size:15px;font-weight:500">{{ t.invoice }}</span>
     <span class="tag {{ d.tagClass }}">{{ d.statusLabel }}</span>
   </div>
   <div style="display:flex;flex-direction:column;gap:14px;padding:6px 16px 32px">
     <div style="display:flex;flex-direction:column;gap:4px">
       <span style="font-family:ui-monospace,Menlo,monospace;font-size:17px;word-break:break-all">{{ d.slip }}</span>
-      <span class="text-muted" style="font-size:13px;display:flex;gap:6px;align-items:center"><i class="ph ph-storefront"></i>{{ d.storeName }} · {{ d.region }} region</span>
+      <span class="text-muted" style="font-size:13px;display:flex;gap:6px;align-items:center"><i class="ph ph-storefront"></i>{{ d.storeName }} · {{ d.regionLabel }}</span>
     </div>
-    <sc-if value="{{ d.locked }}"><div style="display:flex;gap:8px;align-items:center;font-size:12px;padding:8px 10px;border-radius:var(--radius-md);background:var(--color-neutral-900);color:var(--color-neutral-300)"><i class="ph ph-lock-simple"></i>Locked after submission — only Admin can edit.</div></sc-if>
+    <sc-if value="{{ d.locked }}"><div style="display:flex;gap:8px;align-items:center;font-size:12px;padding:8px 10px;border-radius:var(--radius-md);background:var(--color-neutral-900);color:var(--color-neutral-300)"><i class="ph ph-lock-simple"></i>{{ t.locked }}</div></sc-if>
     <div style="display:flex;gap:14px">
       <sc-if value="{{ d.photo }}" hint-placeholder-val="{{ false }}"><div role="img" aria-label="Slip photo" onClick="{{ viewDetailPhoto }}" style="{{ detailPhotoStyle }}"></div></sc-if>
       <sc-if value="{{ d.noPhoto }}"><div style="width:96px;height:132px;flex:none;display:grid;place-items:center;border-radius:var(--radius-sm);border:1px dashed var(--color-neutral-700);color:var(--color-neutral-600)"><i class="ph ph-image" style="font-size:24px"></i></div></sc-if>
       <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-width:0">
-        <div><div class="text-muted" style="font-size:11px">Net amount</div><div style="font-size:22px;font-weight:500;font-variant-numeric:tabular-nums">{{ d.amountF }} <span class="text-muted" style="font-size:12px">SAR</span></div></div>
-        <div><div class="text-muted" style="font-size:11px">Customer</div><div style="font-size:14px">{{ d.cname }}</div><a href="{{ d.tel }}" style="font-size:13px;text-decoration:none">{{ d.cmobile }}</a></div>
+        <div><div class="text-muted" style="font-size:11px">{{ t.netAmount }}</div><div style="font-size:22px;font-weight:500;font-variant-numeric:tabular-nums">{{ d.amountF }} <span class="text-muted" style="font-size:12px">{{ t.sar }}</span></div></div>
+        <div><div class="text-muted" style="font-size:11px">{{ t.customer }}</div><div style="font-size:14px">{{ d.cname }}</div><a href="{{ d.tel }}" style="font-size:13px;text-decoration:none">{{ d.cmobile }}</a></div>
       </div>
     </div>
     <div class="card elev-sm" style="padding:12px 14px;gap:0;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:16px;row-gap:8px;font-size:13px">
-      <span class="text-muted">Date</span><span>{{ d.dateF }}</span>
-      <span class="text-muted">Time</span><span>{{ d.time }}</span>
-      <span class="text-muted">Trans</span><span style="font-family:ui-monospace,Menlo,monospace">{{ d.trans }}</span>
-      <span class="text-muted">Items</span><span style="display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ d.itemList }}" as="it"><span class="tag tag-neutral" style="font-family:ui-monospace,Menlo,monospace">{{ it.code }} × {{ it.qty }}</span></sc-for></span>
-      <span class="text-muted">Entered</span><span>{{ d.createdF }} · {{ d.createdBy }}</span>
+      <span class="text-muted">{{ t.dDate }}</span><span>{{ d.dateF }}</span>
+      <span class="text-muted">{{ t.dTime }}</span><span>{{ d.time }}</span>
+      <span class="text-muted">{{ t.dTrans }}</span><span style="font-family:ui-monospace,Menlo,monospace">{{ d.trans }}</span>
+      <span class="text-muted">{{ t.dItems }}</span><span style="display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ d.itemList }}" as="it"><span class="tag tag-neutral" style="font-family:ui-monospace,Menlo,monospace">{{ it.code }} × {{ it.qty }}</span></sc-for></span>
+      <span class="text-muted">{{ t.dEntered }}</span><span>{{ d.createdF }} · {{ d.createdBy }}</span>
     </div>
     <sc-if value="{{ d.collected }}">
       <div class="card elev-sm" style="padding:12px 14px;gap:0;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:16px;row-gap:8px;font-size:13px">
-        <span class="card-kicker" style="grid-column:1/-1;margin-bottom:2px">Collected by</span>
-        <span class="text-muted">Receiver</span><span>{{ d.collected.name }}</span>
-        <span class="text-muted">Mobile</span><span>{{ d.collected.mobile }}</span>
-        <span class="text-muted">Collected</span><span>{{ d.collectedF }}</span>
+        <span class="card-kicker" style="grid-column:1/-1;margin-bottom:2px">{{ t.collectedBy }}</span>
+        <span class="text-muted">{{ t.receiver }}</span><span>{{ d.collected.name }}</span>
+        <span class="text-muted">{{ t.mobile }}</span><span>{{ d.collected.mobile }}</span>
+        <span class="text-muted">{{ t.collectedOn }}</span><span>{{ d.collectedF }}</span>
       </div>
     </sc-if>
 
-    <sc-if value="{{ d.canReady }}"><button class="btn btn-primary" onClick="{{ markReady }}" style="min-height:50px;width:100%;font-size:15px"><i class="ph ph-package"></i>Mark Ready for Delivery</button></sc-if>
-    <sc-if value="{{ d.canCollectBtn }}"><button class="btn btn-primary" onClick="{{ startCollect }}" style="min-height:50px;width:100%;font-size:15px"><i class="ph ph-handshake"></i>Record customer collection</button></sc-if>
+    <sc-if value="{{ d.canReady }}"><button class="btn btn-primary" onClick="{{ markReady }}" style="min-height:50px;width:100%;font-size:15px"><i class="ph ph-package"></i>{{ t.markReady }}</button></sc-if>
+    <sc-if value="{{ d.canCollectBtn }}"><button class="btn btn-primary" onClick="{{ startCollect }}" style="min-height:50px;width:100%;font-size:15px"><i class="ph ph-handshake"></i>{{ t.recordCollection }}</button></sc-if>
     <sc-if value="{{ collectOpen }}">
       <div class="card elev-md" style="padding:14px;gap:12px">
-        <div class="card-kicker">Collection</div>
-        <div class="field"><label>Receiver name</label><input class="input" value="{{ collect.name }}" onChange="{{ cOn.name }}" placeholder="Person collecting" style="min-height:44px"><sc-if value="{{ cErrs.name }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ cErrs.name }}</div></sc-if></div>
-        <div class="field"><label>Receiver mobile</label><input class="input" type="tel" inputmode="numeric" value="{{ collect.mobile }}" onChange="{{ cOn.mobile }}" placeholder="05XXXXXXXX" style="min-height:44px"><sc-if value="{{ cErrs.mobile }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ cErrs.mobile }}</div></sc-if></div>
-        <button class="btn btn-ghost" onClick="{{ sameAsCustomer }}" style="align-self:flex-start;min-height:36px;font-size:13px">Same as customer</button>
-        <div class="field"><label>Date collected</label><input class="input" type="date" value="{{ collect.date }}" onChange="{{ cOn.date }}" max="{{ todayStr }}" style="min-height:44px;color-scheme:dark"><sc-if value="{{ cErrs.date }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ cErrs.date }}</div></sc-if></div>
-        <div class="field"><label>Time collected</label>
+        <div class="card-kicker">{{ t.collection }}</div>
+        <div class="field"><label>{{ t.receiverName }}</label><input class="input" value="{{ collect.name }}" onChange="{{ cOn.name }}" placeholder="{{ t.personCollecting }}" style="min-height:44px"><sc-if value="{{ cErrs.name }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ cErrs.name }}</div></sc-if></div>
+        <div class="field"><label>{{ t.receiverMobile }}</label><input class="input" type="tel" inputmode="numeric" value="{{ collect.mobile }}" onChange="{{ cOn.mobile }}" placeholder="05XXXXXXXX" dir="ltr" style="min-height:44px"><sc-if value="{{ cErrs.mobile }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ cErrs.mobile }}</div></sc-if></div>
+        <button class="btn btn-ghost" onClick="{{ sameAsCustomer }}" style="align-self:flex-start;min-height:36px;font-size:13px">{{ t.sameAsCustomer }}</button>
+        <div class="field"><label>{{ t.dateCollected }}</label><input class="input" type="date" value="{{ collect.date }}" onChange="{{ cOn.date }}" max="{{ todayStr }}" style="min-height:44px;color-scheme:dark"><sc-if value="{{ cErrs.date }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ cErrs.date }}</div></sc-if></div>
+        <div class="field"><label>{{ t.timeCollected }}</label>
           <div style="display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center">
-            <select class="input" value="{{ collect.hh }}" onChange="{{ cOn.hh }}" style="min-height:44px"><option value="">Hour</option><sc-for list="{{ hours }}" as="h"><option value="{{ h }}">{{ h }}</option></sc-for></select>
+            <select class="input" value="{{ collect.hh }}" onChange="{{ cOn.hh }}" style="min-height:44px"><option value="">{{ t.hour }}</option><sc-for list="{{ hours }}" as="h"><option value="{{ h }}">{{ h }}</option></sc-for></select>
             <span class="text-muted">:</span>
-            <select class="input" value="{{ collect.mm }}" onChange="{{ cOn.mm }}" style="min-height:44px"><option value="">Min</option><sc-for list="{{ mins }}" as="m"><option value="{{ m }}">{{ m }}</option></sc-for></select>
+            <select class="input" value="{{ collect.mm }}" onChange="{{ cOn.mm }}" style="min-height:44px"><option value="">{{ t.min }}</option><sc-for list="{{ mins }}" as="m"><option value="{{ m }}">{{ m }}</option></sc-for></select>
           </div>
           <sc-if value="{{ cErrs.time }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ cErrs.time }}</div></sc-if>
         </div>
         <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px">
-          <button class="btn btn-secondary" onClick="{{ cancelCollect }}" style="min-height:48px">Cancel</button>
-          <button class="btn btn-primary" onClick="{{ confirmCollect }}" style="min-height:48px"><i class="ph ph-check-circle"></i>Confirm collected</button>
+          <button class="btn btn-secondary" onClick="{{ cancelCollect }}" style="min-height:48px">{{ t.cancel }}</button>
+          <button class="btn btn-primary" onClick="{{ confirmCollect }}" style="min-height:48px"><i class="ph ph-check-circle"></i>{{ t.confirmCollected }}</button>
         </div>
       </div>
     </sc-if>
-    <sc-if value="{{ d.canEdit }}"><div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:8px"><button class="btn btn-secondary" onClick="{{ editDetail }}" style="min-height:48px"><i class="ph ph-pencil-simple"></i>Edit invoice</button><button class="btn btn-secondary" onClick="{{ askDelete }}" style="min-height:48px;color:var(--color-accent-200)"><i class="ph ph-trash"></i>Delete</button></div></sc-if>
+    <sc-if value="{{ d.canEdit }}"><div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:8px"><button class="btn btn-secondary" onClick="{{ editDetail }}" style="min-height:48px"><i class="ph ph-pencil-simple"></i>{{ t.editInvoice }}</button><button class="btn btn-secondary" onClick="{{ askDelete }}" style="min-height:48px;color:var(--color-accent-200)"><i class="ph ph-trash"></i>{{ t.delete }}</button></div></sc-if>
 
     <div style="display:flex;flex-direction:column;gap:0;margin-top:4px">
-      <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500);margin-bottom:8px">History</div>
+      <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500);margin-bottom:8px">{{ t.history }}</div>
       <sc-for list="{{ d.timeline }}" as="h">
         <div style="display:flex;gap:10px;padding-bottom:10px">
           <span style="width:8px;height:8px;margin-top:6px;flex:none;border-radius:50%;background:var(--color-accent)"></span>
@@ -379,14 +382,14 @@
   <div class="dialog">
     <div class="dialog-title">{{ confirmTitle }}</div>
     <div class="dialog-body" style="display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:14px;row-gap:6px;font-size:13px">
-      <span class="text-muted">Slip</span><span style="font-family:ui-monospace,Menlo,monospace;word-break:break-all">{{ form.slip }}</span>
-      <span class="text-muted">Customer</span><span>{{ form.cname }} · {{ form.cmobile }}</span>
-      <span class="text-muted">Amount</span><span>{{ confirmAmount }} SAR</span>
-      <span class="text-muted">Store</span><span>{{ confirmStore }}</span>
+      <span class="text-muted">{{ t.slip }}</span><span style="font-family:ui-monospace,Menlo,monospace;word-break:break-all">{{ form.slip }}</span>
+      <span class="text-muted">{{ t.customer }}</span><span>{{ form.cname }} · {{ form.cmobile }}</span>
+      <span class="text-muted">{{ t.amount }}</span><span>{{ confirmAmount }} {{ t.sar }}</span>
+      <span class="text-muted">{{ t.store }}</span><span>{{ confirmStore }}</span>
     </div>
     <p style="margin:0;font-size:12px;color:var(--color-neutral-400);display:flex;gap:6px"><i class="ph ph-lock-simple" style="margin-top:2px"></i>{{ confirmNote }}</p>
     <div class="dialog-actions">
-      <button class="btn btn-secondary" onClick="{{ closeConfirm }}" style="min-height:44px">Back</button>
+      <button class="btn btn-secondary" onClick="{{ closeConfirm }}" style="min-height:44px">{{ t.back }}</button>
       <button class="btn btn-primary" onClick="{{ doSubmit }}" disabled="{{ busy }}" style="min-height:44px">{{ saveLabel }}</button>
     </div>
   </div>
@@ -396,15 +399,15 @@
 <sc-if value="{{ delOpen }}" hint-placeholder-val="{{ false }}">
 <div class="dialog-backdrop" style="z-index:30">
   <div class="dialog">
-    <div class="dialog-title">Delete this invoice?</div>
+    <div class="dialog-title">{{ t.delTitle }}</div>
     <div class="dialog-body" style="display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:14px;row-gap:6px;font-size:13px">
-      <span class="text-muted">Slip</span><span style="font-family:ui-monospace,Menlo,monospace;word-break:break-all">{{ d.slip }}</span>
-      <span class="text-muted">Customer</span><span>{{ d.cname }}</span>
-      <span class="text-muted">Amount</span><span>{{ d.amountF }} SAR</span>
+      <span class="text-muted">{{ t.slip }}</span><span style="font-family:ui-monospace,Menlo,monospace;word-break:break-all">{{ d.slip }}</span>
+      <span class="text-muted">{{ t.customer }}</span><span>{{ d.cname }}</span>
+      <span class="text-muted">{{ t.amount }}</span><span>{{ d.amountF }} {{ t.sar }}</span>
     </div>
-    <p style="margin:0;font-size:12px;color:var(--color-neutral-400);display:flex;gap:6px"><i class="ph ph-warning" style="margin-top:2px"></i>This removes it for all users and cannot be undone. The slip number becomes available to enter again.</p>
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-400);display:flex;gap:6px"><i class="ph ph-warning" style="margin-top:2px"></i>{{ t.delNote }}</p>
     <div class="dialog-actions">
-      <button class="btn btn-secondary" onClick="{{ closeDelete }}" style="min-height:44px">Cancel</button>
+      <button class="btn btn-secondary" onClick="{{ closeDelete }}" style="min-height:44px">{{ t.cancel }}</button>
       <button class="btn btn-primary" onClick="{{ doDelete }}" disabled="{{ busy }}" style="min-height:44px"><i class="ph ph-trash"></i>{{ delLabel }}</button>
     </div>
   </div>
@@ -428,6 +431,13 @@
 const STORES=[{id:'thager',name:'Thager Plaza',region:'Central'},{id:'haramain',name:'Jeddah Haramain',region:'West'},{id:'dammam2',name:'Dammam 2',region:'East'}];
 const STORE=Object.fromEntries(STORES.map(s=>[s.id,s]));
 const REGIONS=['Central','West','East'];
+let LANG='en';
+const AR={"Order entry":"إدخال الطلبات","Delivery / Store":"التسليم / الفرع","Admin":"المدير","Registers customer slips and assigns a store":"يسجّل إيصالات العملاء ويعيّن الفرع","Prepares orders and records customer collection":"يجهّز الطلبات ويسجّل استلام العميل","Monitors everything and can edit locked invoices":"يتابع كل شيء ويمكنه تعديل الفواتير المقفلة","Awaiting prep":"بانتظار التجهيز","Ready for delivery":"جاهز للتسليم","Collected":"تم الاستلام","Awaiting":"بانتظار","Ready":"جاهز","All":"الكل","Central":"الوسطى","West":"الغربية","East":"الشرقية","Password":"كلمة المرور","PIN":"الرمز","Account password":"كلمة المرور","4-digit PIN":"رمز من 4 أرقام","Connecting to Firebase…":"جارٍ الاتصال…","Signing in…":"جارٍ الدخول…","Sign in":"دخول","Cloud sync":"متزامن","Local demo":"تجريبي","Saving…":"جارٍ الحفظ…","Save changes":"حفظ التعديلات","Submit & lock":"إرسال وقفل","{0} · {1} region":"{0} · المنطقة {1}","{0} invoices on record":"{0} فاتورة مسجلة","New invoice":"فاتورة جديدة","Invoices":"الفواتير","Dashboard":"لوحة المتابعة","Store queue":"طلبات الفرع","All orders":"كل الطلبات","Already registered on {0} for {1} — this slip cannot be added twice.":"مسجّل مسبقاً في {0} لفرع {1} — لا يمكن إضافة الإيصال مرتين.","Edit invoice":"تعديل الفاتورة","Admin edit — changes are logged in the invoice history.":"تعديل المدير — تُسجَّل التغييرات في سجل الفاتورة.","Every field is required. Once submitted, the invoice is locked — only Admin can edit it.":"جميع الحقول إلزامية. بعد الإرسال تُقفل الفاتورة — التعديل للمدير فقط.","Submit invoice":"إرسال الفاتورة","{0} item · {1} pcs":"{0} صنف · {1} قطعة","{0} items · {1} pcs":"{0} أصناف · {1} قطعة","Take photo of slip":"صوّر الإيصال","Could not read that image":"تعذّرت قراءة الصورة","{0} — Region: {1}":"{0} — المنطقة: {1}","Duplicate slip — not saved.":"إيصال مكرر — لم يُحفظ.","{0} fields need attention":"{0} حقول تحتاج إلى مراجعة","1 field needs attention":"حقل واحد يحتاج إلى مراجعة","Save admin changes?":"حفظ تعديلات المدير؟","Submit this invoice?":"إرسال هذه الفاتورة؟","The edit will be recorded in the invoice history.":"سيُسجَّل التعديل في سجل الفاتورة.","After submitting, Order entry cannot change this invoice. It goes straight to the store’s delivery queue.":"بعد الإرسال لا يمكن لمدخل الطلبات تعديل الفاتورة، وتنتقل مباشرة إلى طلبات الفرع.","Invoice updated":"تم تحديث الفاتورة","Locked & sent to {0}":"تم القفل والإرسال إلى {0}","Orders assigned to your store. Tap one to prepare or hand over.":"الطلبات المعيّنة لفرعك. اضغط على طلب لتجهيزه أو تسليمه.","Tap any order to review or edit.":"اضغط على أي طلب للمراجعة أو التعديل.","Submitted invoices are read-only.":"الفواتير المرسلة للقراءة فقط.","All stores":"كل الفروع","All {0} stores":"كل فروع {0}","All regions":"كل المناطق","{0} region":"المنطقة {0}","{0} orders":"{0} طلب","Total orders":"إجمالي الطلبات","{0} not yet collected":"{0} لم تُستلم بعد","Every field, readiness and collection record · {0} rows in current filter":"كل الحقول وسجلات التجهيز والاستلام · {0} صف في الفلتر الحالي","Marked Ready for Delivery":"تم التحديد كجاهز للتسليم","Collection recorded":"تم تسجيل الاستلام","Deleting…":"جارٍ الحذف…","Delete invoice":"حذف الفاتورة","Invoice deleted":"تم حذف الفاتورة","Enter the slip number":"أدخل رقم الإيصال","Duplicate — this slip was already entered on {0} for {1}.":"مكرر — تم إدخال هذا الإيصال في {0} لفرع {1}.","Pick the date":"اختر التاريخ","Enter Trans no.":"أدخل رقم العملية","Select hour and minute":"اختر الساعة والدقيقة","Add at least one item number":"أضف رقم صنف واحداً على الأقل","Enter the net amount after savings":"أدخل المبلغ الصافي بعد التوفير","Enter the customer name":"أدخل اسم العميل","Saudi mobile — 10 digits starting 05":"جوال سعودي — 10 أرقام تبدأ بـ 05","Photograph the slip":"صوّر الإيصال","Assign a store":"اختر الفرع","Enter the receiver’s name":"أدخل اسم المستلم","Pick the collection date":"اختر تاريخ الاستلام","Cannot be before the invoice date":"لا يمكن أن يكون قبل تاريخ الفاتورة","Duplicate — this slip number is already registered.":"مكرر — رقم الإيصال مسجّل مسبقاً.","Not saved: {0}":"لم يُحفظ: {0}","your role is not allowed to do that.":"صلاحيتك لا تسمح بذلك.","Enter your user ID and password.":"أدخل اسم المستخدم وكلمة المرور.","Incorrect user ID or password.":"اسم المستخدم أو كلمة المرور غير صحيحة.","No internet connection.":"لا يوجد اتصال بالإنترنت.","Too many attempts — wait a minute and try again.":"محاولات كثيرة — انتظر دقيقة ثم حاول مجدداً.","Incorrect PIN for {0}.":"رمز غير صحيح لـ {0}.","Exported {0} rows":"تم تصدير {0} صف","No rows to export for this filter.":"لا توجد بيانات للتصدير.","Invoice registered & locked":"تم تسجيل الفاتورة وقفلها","Marked ready for delivery":"تم التجهيز للتسليم","Collected by {0}":"استلمها {0}"};
+const TT={"appName":["Invoice to Delivery","من الفاتورة إلى التسليم"],"appDesc":["Register a customer slip, hand it to the store, and track it until the customer collects.","سجّل إيصال العميل، وأرسله إلى الفرع، وتابعه حتى يستلم العميل طلبه."],"signInAs":["Sign in as","تسجيل الدخول كـ"],"userId":["User ID","اسم المستخدم"],"demoPins":["Demo PINs — Order 1111 · Delivery 2222 · Admin 9999","رموز تجريبية — الطلبات 1111 · التسليم 2222 · المدير 9999"],"slipK":["Slip","الإيصال"],"slipNo":["Slip No.","رقم الإيصال"],"date":["Date","التاريخ"],"trans":["Trans","رقم العملية"],"time":["Time","الوقت"],"hour":["Hour","الساعة"],"min":["Min","الدقيقة"],"itemsAmount":["Items & amount","الأصناف والمبلغ"],"itemNumbers":["Item numbers","أرقام الأصناف"],"itemPh":["Item no. e.g. 26-1438","رقم الصنف مثال 26-1438"],"qty":["Qty","الكمية"],"add":["Add","إضافة"],"totalAmt":["Total invoice amount — net after savings & discounts","إجمالي الفاتورة — الصافي بعد التوفير والخصومات"],"sar":["SAR","ر.س"],"customerK":["Customer","العميل"],"customerName":["Customer name","اسم العميل"],"fullName":["Full name","الاسم الكامل"],"mobileNumber":["Mobile number","رقم الجوال"],"slipPhoto":["Slip photo","صورة الإيصال"],"slipAttached":["Slip attached","تم إرفاق الإيصال"],"retake":["Retake","إعادة التصوير"],"assignStore":["Assign store","تعيين الفرع"],"selectStore":["Select store","اختر الفرع"],"cancelEdit":["Cancel edit","إلغاء التعديل"],"yourStore":["Your store","فرعك"],"searchPh":["Slip, trans, customer, mobile, item","إيصال، عملية، عميل، جوال، صنف"],"noMatch":["No invoices match these filters.","لا توجد فواتير مطابقة لهذه الفلاتر."],"dashboard":["Dashboard","لوحة المتابعة"],"netValue":["Net invoice value","صافي قيمة الفواتير"],"byStore":["By store","حسب الفرع"],"awaitingS":["awaiting","بانتظار التجهيز"],"readyS":["ready","جاهز"],"collectedS":["collected","مستلم"],"excel":["Excel report","تقرير Excel"],"filtered":["Filtered","حسب الفلتر"],"allRaw":["All raw data","كل البيانات"],"recent":["Recent activity","آخر النشاطات"],"invoice":["Invoice","الفاتورة"],"locked":["Locked after submission — only Admin can edit.","مقفلة بعد الإرسال — التعديل للمدير فقط."],"netAmount":["Net amount","المبلغ الصافي"],"customer":["Customer","العميل"],"dDate":["Date","التاريخ"],"dTime":["Time","الوقت"],"dTrans":["Trans","رقم العملية"],"dItems":["Items","الأصناف"],"dEntered":["Entered","أُدخلت"],"collectedBy":["Collected by","استلمها"],"receiver":["Receiver","المستلم"],"mobile":["Mobile","الجوال"],"collectedOn":["Collected","الاستلام"],"markReady":["Mark Ready for Delivery","جاهز للتسليم"],"recordCollection":["Record customer collection","تسجيل استلام العميل"],"collection":["Collection","الاستلام"],"receiverName":["Receiver name","اسم المستلم"],"personCollecting":["Person collecting","الشخص المستلم"],"receiverMobile":["Receiver mobile","جوال المستلم"],"sameAsCustomer":["Same as customer","نفس بيانات العميل"],"dateCollected":["Date collected","تاريخ الاستلام"],"timeCollected":["Time collected","وقت الاستلام"],"cancel":["Cancel","إلغاء"],"confirmCollected":["Confirm collected","تأكيد الاستلام"],"editInvoice":["Edit invoice","تعديل الفاتورة"],"delete":["Delete","حذف"],"history":["History","السجل"],"slip":["Slip","الإيصال"],"amount":["Amount","المبلغ"],"store":["Store","الفرع"],"back":["Back","رجوع"],"delTitle":["Delete this invoice?","حذف هذه الفاتورة؟"],"delNote":["This removes it for all users and cannot be undone. The slip number becomes available to enter again.","سيتم حذفها لجميع المستخدمين ولا يمكن التراجع، ويصبح رقم الإيصال متاحاً للإدخال مرة أخرى."]};
+const L=(s,...a)=>{let r=(LANG==='ar'&&AR[s])||s;a.forEach((v,i)=>{r=r.split('{'+i+'}').join(String(v))});return r};
+const itemsLbl=(n,q)=>L(n===1?'{0} item · {1} pcs':'{0} items · {1} pcs',n,q);
+const trHist=t=>{if(LANG!=='ar'||!t)return t;if(AR[t])return AR[t];if(t.startsWith('Collected by '))return L('Collected by {0}',t.slice(13));if(t.startsWith('Edited by Admin'))return 'عدّلها المدير'+t.slice(15);return t};
+const trBy=b=>LANG!=='ar'||!b?b:b.startsWith('Delivery · ')?'التسليم · '+b.slice(11):L(b);
 const PINS={order:'1111',delivery:'2222',admin:'9999'};
 const ROLES=[
   {id:'order',label:'Order entry',icon:'ph-receipt',desc:'Registers customer slips and assigns a store'},
@@ -467,7 +477,7 @@ const init=()=>{let orders,session=null;try{orders=JSON.parse(localStorage.getIt
   if(!Array.isArray(orders)){orders=seed();try{localStorage.setItem(KEY,JSON.stringify(orders))}catch(e){}}
   try{session=JSON.parse(localStorage.getItem(SKEY))}catch(e){}
   const st=(session&&session.store)||'thager';
-  return {orders,session,loginRole:'order',pin:'',loginErr:'',view:session?defView(session.role):'new',form:emptyForm(),errs:{},editingId:null,detailId:null,confirm:false,toast:'',viewer:'',q:'',statusF:'All',lRegion:STORE[st].region,lStore:session&&session.role==='delivery'?st:'All',collect:null,cErrs:{},dashRegion:'All',dashStore:'All',mode:'local',busy:false};
+  return {orders,session,loginRole:'order',pin:'',loginErr:'',view:session?defView(session.role):'new',form:emptyForm(),errs:{},editingId:null,detailId:null,confirm:false,toast:'',viewer:'',q:'',statusF:'All',lRegion:STORE[st].region,lStore:session&&session.role==='delivery'?st:'All',collect:null,cErrs:{},dashRegion:'All',dashStore:'All',mode:'local',busy:false,lang:(localStorage.getItem('i2d.lang')==='ar'?'ar':'en')};
 };
 
 class Component extends DCLogic {
@@ -495,8 +505,8 @@ class Component extends DCLogic {
   }
   componentWillUnmount(){this.unsub&&this.unsub()}
   run(fn){this.setState({busy:true});return Promise.resolve().then(fn).catch(err=>{const m=(err&&err.message)||String(err);
-    if(m==='DUP'){this.setState({confirm:false,errs:{slip:'Duplicate — this slip number is already registered.'}});this.flash('Duplicate slip — not saved.')}
-    else{this.setState({confirm:false});this.flash('Not saved: '+(err&&err.code==='permission-denied'?'your role is not allowed to do that.':m))}}).finally(()=>this.setState({busy:false}))}
+    if(m==='DUP'){this.setState({confirm:false,errs:{slip:L('Duplicate — this slip number is already registered.')}});this.flash(L('Duplicate slip — not saved.'))}
+    else{this.setState({confirm:false});this.flash(L('Not saved: {0}',err&&err.code==='permission-denied'?L('your role is not allowed to do that.'):m))}}).finally(()=>this.setState({busy:false}))}
   async uploadPhoto(id,url){if(!url||!url.startsWith('data:')||!this.fb.storage)return url;const r=this.fb.storage.ref('slips/'+id+'-'+Date.now()+'.jpg');await r.putString(url,'data_url',{contentType:'image/jpeg'});return r.getDownloadURL()}
   async createOrder(rec,by,now){const key=norm(rec.slip);const hist=[{at:now,by,text:'Invoice registered & locked'}];
     if(this.state.mode!=='cloud'){if(this.dupOf(rec.slip))throw new Error('DUP');const o={id:uid(),...rec,slipKey:key,status:'Pending',createdAt:now,createdBy:by,history:hist};if(!this.save([o,...this.state.orders]))throw new Error('device storage is full');return}
@@ -520,12 +530,12 @@ class Component extends DCLogic {
   dupOf(slip,exceptId){const n=norm(slip);return n?this.state.orders.find(o=>norm(o.slip)===n&&o.id!==exceptId):null}
   roleName(){const s=this.state.session;if(!s)return '';if(s.role==='delivery')return 'Delivery · '+(STORE[this.state.lStore]||{}).name;return s.role==='admin'?'Admin':'Order entry'}
   validate(f){const e={};const dup=this.dupOf(f.slip,this.state.editingId);
-    if(!f.slip.trim())e.slip='Enter the slip number';else if(dup)e.slip='Duplicate — this slip was already entered on '+stamp(dup.createdAt)+' for '+STORE[dup.store].name+'.';
-    if(!f.date)e.date='Pick the date';if(!f.trans.trim())e.trans='Enter Trans no.';
-    if(!f.hh||!f.mm)e.time='Select hour and minute';if(!f.items.length)e.items='Add at least one item number';
-    if(!(parseFloat(f.amount)>0))e.amount='Enter the net amount after savings';
-    if(!f.cname.trim())e.cname='Enter the customer name';if(!MOB.test(f.cmobile))e.cmobile='Saudi mobile — 10 digits starting 05';
-    if(!f.photo)e.photo='Photograph the slip';if(!f.store)e.store='Assign a store';return e}
+    if(!f.slip.trim())e.slip=L('Enter the slip number');else if(dup)e.slip=L('Duplicate — this slip was already entered on {0} for {1}.',stamp(dup.createdAt),STORE[dup.store].name);
+    if(!f.date)e.date=L('Pick the date');if(!f.trans.trim())e.trans=L('Enter Trans no.');
+    if(!f.hh||!f.mm)e.time=L('Select hour and minute');if(!f.items.length)e.items=L('Add at least one item number');
+    if(!(parseFloat(f.amount)>0))e.amount=L('Enter the net amount after savings');
+    if(!f.cname.trim())e.cname=L('Enter the customer name');if(!MOB.test(f.cmobile))e.cmobile=L('Saudi mobile — 10 digits starting 05');
+    if(!f.photo)e.photo=L('Photograph the slip');if(!f.store)e.store=L('Assign a store');return e}
   mergeItems(f){const codes=f.itemDraft.split(/[,\s]+/).map(x=>x.trim().toUpperCase()).filter(Boolean);const q=Math.max(1,parseInt(f.qtyDraft)||1);
     const items=NI(f.items);codes.forEach(c=>{const ex=items.find(x=>x.code===c);if(ex)ex.qty+=q;else items.push({code:c,qty:q})});return {...f,items,itemDraft:'',qtyDraft:'1'}}
   addItem(){const f=this.state.form;if(!f.itemDraft.trim())return;this.setForm(this.mergeItems(f))}
@@ -535,18 +545,18 @@ class Component extends DCLogic {
       'Net Amount (SAR)':Number(o.amount),'Customer Name':o.cname,'Customer Mobile':o.cmobile,'Store':s.name,'Region':s.region,'Status':SL[o.status],
       'Entered At':stamp(o.createdAt),'Entered By':o.createdBy,'Ready At':o.readyAt?stamp(o.readyAt):'','Receiver Name':c.name||'','Receiver Mobile':c.mobile||'',
       'Collection Date':c.date?fmtDate(c.date):'','Collection Time':c.time||'','Slip Image':!o.photo?'Missing':/^https?:/.test(o.photo)?o.photo:'Attached (in app)','Entered By Account':o.createdByEmail||'','Admin Edits':ed.length,'Last Admin Edit':ed.length?stamp(ed[ed.length-1].at):''}});
-    if(!data.length){this.flash('No rows to export for this filter.');return}
+    if(!data.length){this.flash(L('No rows to export for this filter.'));return}
     const fn='invoice-delivery-'+name+'-'+today();
     if(window.XLSX){const ws=XLSX.utils.json_to_sheet(data);ws['!cols']=Object.keys(data[0]).map(k=>({wch:Math.max(k.length,...data.map(r=>String(r[k]).length))+2}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Orders');XLSX.writeFile(wb,fn+'.xlsx')}
     else{const keys=Object.keys(data[0]);const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';const csv='\ufeff'+[keys.map(esc).join(','),...data.map(r=>keys.map(k=>esc(r[k])).join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=fn+'.csv';a.click()}
-    this.flash('Exported '+data.length+' rows');
+    this.flash(L('Exported {0} rows',data.length));
   }
   renderVals(){
-    const S=this.state,p=this.props;const sess=S.session;const role=sess&&sess.role;const cloud=S.mode==='cloud';
+    const S=this.state,p=this.props;const sess=S.session;const role=sess&&sess.role;const cloud=S.mode==='cloud';LANG=S.lang||'en';
     const step=Number(p.minuteStep??1)||1;
     const hours=[...Array(24)].map((_,i)=>pad(i));const mins=[...Array(Math.ceil(60/step))].map((_,i)=>pad(i*step));
     const ph=(u,x)=>({flex:'none',backgroundImage:u?'url("'+u+'")':'none',backgroundSize:'cover',backgroundPosition:'center top',backgroundRepeat:'no-repeat',borderRadius:'var(--radius-sm)',boxShadow:'var(--shadow-sm)',cursor:'zoom-in',...x});
-    const vm=o=>{const s=STORE[o.store]||{};const n=NI(o.items).length,tq=qtySum(o.items);return {...o,itemList:NI(o.items),storeName:s.name,region:s.region,dateF:fmtDate(o.date),amountF:sar(o.amount),itemsLabel:n+' item'+(n===1?'':'s')+' · '+tq+' pcs',statusLabel:SL[o.status],tagClass:TAG[o.status],open:()=>this.setState({detailId:o.id,collect:null,cErrs:{}})}};
+    const vm=o=>{const s=STORE[o.store]||{};const n=NI(o.items).length,tq=qtySum(o.items);return {...o,itemList:NI(o.items),storeName:s.name,region:L(s.region),regionLabel:L('{0} region',L(s.region)),dateF:fmtDate(o.date),amountF:sar(o.amount),itemsLabel:itemsLbl(n,tq),statusLabel:L(SL[o.status]),tagClass:TAG[o.status],open:()=>this.setState({detailId:o.id,collect:null,cErrs:{}})}};
     const sorted=S.orders.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
     const F=k=>e=>{let v=e.target.value;if(k==='amount')v=v.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1');if(k==='qtyDraft')v=v.replace(/\D/g,'').slice(0,4);if(k==='cmobile'||k==='trans')v=v.replace(/\D/g,'').slice(0,k==='cmobile'?10:12);this.setForm({[k]:v})};
     const C=k=>e=>{let v=e.target.value;if(k==='mobile')v=v.replace(/\D/g,'').slice(0,10);this.setState(s=>({collect:{...s.collect,[k]:v},cErrs:{}}))};
@@ -555,89 +565,91 @@ class Component extends DCLogic {
     const ql=S.q.trim().toLowerCase();if(ql)base=base.filter(o=>[o.slip,o.trans,o.cname,o.cmobile,...NI(o.items).map(x=>x.code)].join(' ').toLowerCase().includes(ql));
     const cnt=st=>base.filter(o=>o.status===st).length;
     const list=(S.statusF==='All'?base:base.filter(o=>o.status===S.statusF)).map(vm);
-    const statusChips=[['All','All',base.length],['Pending','Awaiting',cnt('Pending')],['Ready','Ready',cnt('Ready')],['Collected','Collected',cnt('Collected')]].map(([id,label,n])=>({label,n,active:S.statusF===id,pick:()=>this.setState({statusF:id})}));
+    const statusChips=[['All','All',base.length],['Pending','Awaiting',cnt('Pending')],['Ready','Ready',cnt('Ready')],['Collected','Collected',cnt('Collected')]].map(([id,label,n])=>({label:L(label),n,active:S.statusF===id,pick:()=>this.setState({statusF:id})}));
     const isDelivery=role==='delivery';
-    const lStoreOpts=isDelivery?STORES.filter(s=>s.region===S.lRegion).map(s=>({id:s.id,label:s.name+' — '+s.region})):[{id:'All',label:'All stores'},...STORES.map(s=>({id:s.id,label:s.name+' — '+s.region}))];
+    const lStoreOpts=isDelivery?STORES.filter(s=>s.region===S.lRegion).map(s=>({id:s.id,label:s.name+' — '+L(s.region)})):[{id:'All',label:L('All stores')},...STORES.map(s=>({id:s.id,label:s.name+' — '+L(s.region)}))];
     const setLStore=id=>{this.setState({lStore:id});if(isDelivery){const ns={...sess,store:id};localStorage.setItem('i2d.store',id);if(!cloud)localStorage.setItem(SKEY,JSON.stringify(ns));this.setState({session:ns})}};
-    const lRegions=REGIONS.map(r=>({label:r,active:S.lRegion===r,pick:()=>{this.setState({lRegion:r});setLStore(STORES.find(s=>s.region===r).id)}}));
+    const lRegions=REGIONS.map(r=>({label:L(r),active:S.lRegion===r,pick:()=>{this.setState({lRegion:r});setLStore(STORES.find(s=>s.region===r).id)}}));
     // dashboard
     let dl=S.orders;if(S.dashRegion!=='All')dl=dl.filter(o=>STORE[o.store].region===S.dashRegion);if(S.dashStore!=='All')dl=dl.filter(o=>o.store===S.dashStore);
     const dc=st=>dl.filter(o=>o.status===st).length;const P=dc('Pending'),R=dc('Ready'),Cc=dc('Collected'),T=dl.length;
     const go=st=>()=>this.setState({view:'list',statusF:st,lStore:isDelivery?S.lStore:(S.dashStore),q:''});
-    const kpis=[{label:'Total orders',n:T,color:'var(--color-neutral-400)',go:go('All')},{label:'Awaiting prep',n:P,color:'var(--color-neutral-600)',go:go('Pending')},{label:'Ready for delivery',n:R,color:'var(--color-accent)',go:go('Ready')},{label:'Collected',n:Cc,color:'var(--color-accent-300)',go:go('Collected')}];
+    const kpis=[{label:L('Total orders'),n:T,color:'var(--color-neutral-400)',go:go('All')},{label:L('Awaiting prep'),n:P,color:'var(--color-neutral-600)',go:go('Pending')},{label:L('Ready for delivery'),n:R,color:'var(--color-accent)',go:go('Ready')},{label:L('Collected'),n:Cc,color:'var(--color-accent-300)',go:go('Collected')}];
     const openVal=dl.filter(o=>o.status!=='Collected').reduce((a,o)=>a+Number(o.amount),0);
-    const byStore=STORES.filter(s=>(S.dashRegion==='All'||s.region===S.dashRegion)&&(S.dashStore==='All'||s.id===S.dashStore)).map(s=>{const os=S.orders.filter(o=>o.store===s.id);const c=st=>os.filter(o=>o.status===st).length;const p_=c('Pending'),r_=c('Ready'),c_=c('Collected');return {name:s.name,region:s.region,p:p_,r:r_,c:c_,pp:pct(p_,os.length),rp:pct(r_,os.length),cp:pct(c_,os.length),value:sar(os.reduce((a,o)=>a+Number(o.amount),0))}});
-    const recent=dl.flatMap(o=>(o.history||[]).map(h=>({...h,o}))).sort((a,b)=>b.at.localeCompare(a.at)).slice(0,6).map(h=>({text:h.text,when:stamp(h.at),slipShort:'…'+h.o.slip.slice(-6),storeName:STORE[h.o.store].name,icon:/Collected/.test(h.text)?'ph-handshake':/ready/i.test(h.text)?'ph-package':/Edited/.test(h.text)?'ph-pencil-simple':'ph-receipt',open:()=>this.setState({detailId:h.o.id,collect:null})}));
-    const dStoreOpts=[{id:'All',label:S.dashRegion==='All'?'All stores':'All '+S.dashRegion+' stores'},...STORES.filter(s=>S.dashRegion==='All'||s.region===S.dashRegion).map(s=>({id:s.id,label:s.name+' — '+s.region}))];
+    const byStore=STORES.filter(s=>(S.dashRegion==='All'||s.region===S.dashRegion)&&(S.dashStore==='All'||s.id===S.dashStore)).map(s=>{const os=S.orders.filter(o=>o.store===s.id);const c=st=>os.filter(o=>o.status===st).length;const p_=c('Pending'),r_=c('Ready'),c_=c('Collected');return {name:s.name,region:L(s.region),p:p_,r:r_,c:c_,pp:pct(p_,os.length),rp:pct(r_,os.length),cp:pct(c_,os.length),value:sar(os.reduce((a,o)=>a+Number(o.amount),0))}});
+    const recent=dl.flatMap(o=>(o.history||[]).map(h=>({...h,o}))).sort((a,b)=>b.at.localeCompare(a.at)).slice(0,6).map(h=>({text:trHist(h.text),when:stamp(h.at),slipShort:'…'+h.o.slip.slice(-6),storeName:STORE[h.o.store].name,icon:/Collected/.test(h.text)?'ph-handshake':/ready/i.test(h.text)?'ph-package':/Edited/.test(h.text)?'ph-pencil-simple':'ph-receipt',open:()=>this.setState({detailId:h.o.id,collect:null})}));
+    const dStoreOpts=[{id:'All',label:S.dashRegion==='All'?L('All stores'):L('All {0} stores',L(S.dashRegion))},...STORES.filter(s=>S.dashRegion==='All'||s.region===S.dashRegion).map(s=>({id:s.id,label:s.name+' — '+L(s.region)}))];
     // detail
     const od=S.orders.find(o=>o.id===S.detailId);let d=null;
-    if(od){const v=vm(od);d={...v,tel:'tel:'+od.cmobile,locked:role!=='admin',noPhoto:!od.photo,createdF:stamp(od.createdAt),collectedF:od.collected?fmtDate(od.collected.date)+' '+od.collected.time:'',
+    if(od){const v=vm(od);d={...v,tel:'tel:'+od.cmobile,locked:role!=='admin',noPhoto:!od.photo,createdF:stamp(od.createdAt),createdBy:trBy(od.createdBy),collectedF:od.collected?fmtDate(od.collected.date)+' '+od.collected.time:'',
       canReady:isDelivery&&od.status==='Pending',canCollectBtn:isDelivery&&od.status==='Ready'&&!S.collect,canEdit:role==='admin',
-      timeline:(od.history||[]).slice().reverse().map(h=>({text:h.text,when:stamp(h.at),by:h.by}))}}
+      timeline:(od.history||[]).slice().reverse().map(h=>({text:trHist(h.text),when:stamp(h.at),by:trBy(h.by)}))}}
     const f=S.form;const dupLive=!S.errs.slip&&this.dupOf(f.slip,S.editingId);
     const tabsBy={order:[['new','New invoice','ph-receipt'],['list','Invoices','ph-list-bullets'],['dash','Dashboard','ph-chart-bar']],delivery:[['list','Store queue','ph-package'],['dash','Dashboard','ph-chart-bar']],admin:[['dash','Dashboard','ph-chart-bar'],['list','All orders','ph-list-bullets'],['new','New invoice','ph-receipt']]};
     const ro=ROLES.find(r=>r.id===role)||{};
     const doLogin=()=>{if(S.mode==='connecting'||S.busy)return;
-      if(cloud){const id=(S.userId||'').trim().toLowerCase().replace(/[^a-z0-9._-]/g,'');if(!id||!S.pin){this.setState({loginErr:'Enter your user ID and password.'});return}
+      if(cloud){const id=(S.userId||'').trim().toLowerCase().replace(/[^a-z0-9._-]/g,'');if(!id||!S.pin){this.setState({loginErr:L('Enter your user ID and password.')});return}
         const em=id+'@'+(this.fb.cfg.userDomain||'i2d.app');
-        this.setState({busy:true,loginErr:''});this.fb.auth.signInWithEmailAndPassword(em,S.pin).then(()=>this.setState({pin:'',busy:false})).catch(err=>{const c=(err&&err.code)||'';const m={'auth/unauthorized-domain':'This website is not yet allowed in Firebase (Authentication → Settings → Authorized domains).','auth/network-request-failed':'No internet connection.','auth/too-many-requests':'Too many attempts — wait a minute and try again.','auth/invalid-api-key':'Firebase key in firebase-config.js is wrong.','auth/api-key-not-valid.-please-pass-a-valid-api-key.':'Firebase key in firebase-config.js is wrong.','auth/operation-not-allowed':'Turn on Email/Password in Firebase Authentication.'}[c];this.setState({busy:false,loginErr:m||'Incorrect user ID or password.'})});return}
-      if(p.requirePin!==false&&S.pin!==PINS[S.loginRole]){this.setState({loginErr:'Incorrect PIN for '+ROLES.find(r=>r.id===S.loginRole).label+'.'});return}
+        this.setState({busy:true,loginErr:''});this.fb.auth.signInWithEmailAndPassword(em,S.pin).then(()=>this.setState({pin:'',busy:false})).catch(err=>{const c=(err&&err.code)||'';const m={'auth/unauthorized-domain':'This website is not yet allowed in Firebase (Authentication → Settings → Authorized domains).','auth/network-request-failed':'No internet connection.','auth/too-many-requests':'Too many attempts — wait a minute and try again.','auth/invalid-api-key':'Firebase key in firebase-config.js is wrong.','auth/api-key-not-valid.-please-pass-a-valid-api-key.':'Firebase key in firebase-config.js is wrong.','auth/operation-not-allowed':'Turn on Email/Password in Firebase Authentication.'}[c];this.setState({busy:false,loginErr:m?L(m):L('Incorrect user ID or password.')})});return}
+      if(p.requirePin!==false&&S.pin!==PINS[S.loginRole]){this.setState({loginErr:L('Incorrect PIN for {0}.',L(ROLES.find(r=>r.id===S.loginRole).label))});return}
       const ns={role:S.loginRole,store:(sess&&sess.store)||'thager'};localStorage.setItem(SKEY,JSON.stringify(ns));
       this.setState({session:ns,pin:'',loginErr:'',view:defView(ns.role),lStore:ns.role==='delivery'?ns.store:'All',lRegion:STORE[ns.store].region,statusF:'All',q:''})};
     return {
       isLogin:!sess,isApp:!!sess,showRoles:!cloud&&S.mode!=='connecting',cloudLogin:cloud,userId:S.userId||'',onUserId:e=>this.setState({userId:e.target.value,loginErr:''}),requirePin:cloud||p.requirePin!==false,showDemoPins:!cloud&&S.mode!=='connecting'&&p.showDemoPins!==false,pin:S.pin,loginErr:S.loginErr,
-      pinLabel:cloud?'Password':'PIN',pinMode:cloud?'text':'numeric',pinMax:cloud?64:4,pinPh:cloud?'Account password':'4-digit PIN',
-      loginLabel:S.mode==='connecting'?'Connecting to Firebase…':S.busy?'Signing in…':'Sign in',loginDisabled:S.busy||S.mode==='connecting',
-      modeLabel:cloud?'Cloud sync':'Local demo',busy:S.busy,saveLabel:S.busy?'Saving…':S.editingId?'Save changes':'Submit & lock',
-      roles:ROLES.map(r=>({...r,active:S.loginRole===r.id,border:S.loginRole===r.id?'var(--color-accent)':'var(--color-neutral-800)',iconColor:S.loginRole===r.id?'var(--color-accent)':'var(--color-neutral-500)',pick:()=>this.setState({loginRole:r.id,loginErr:''})})),
+      pinLabel:L(cloud?'Password':'PIN'),pinMode:cloud?'text':'numeric',pinMax:cloud?64:4,pinPh:L(cloud?'Account password':'4-digit PIN'),
+      loginLabel:L(S.mode==='connecting'?'Connecting to Firebase…':S.busy?'Signing in…':'Sign in'),loginDisabled:S.busy||S.mode==='connecting',
+      modeLabel:L(cloud?'Cloud sync':'Local demo'),busy:S.busy,saveLabel:L(S.busy?'Saving…':S.editingId?'Save changes':'Submit & lock'),
+      t:Object.fromEntries(Object.entries(TT).map(([k,v])=>[k,LANG==='ar'?v[1]:v[0]])),dir:LANG==='ar'?'rtl':'ltr',lang:LANG,langBtn:LANG==='ar'?'EN':'عربي',backIcon:LANG==='ar'?'ph-caret-right':'ph-caret-left',
+      toggleLang:()=>{const n=LANG==='ar'?'en':'ar';try{localStorage.setItem('i2d.lang',n)}catch(e){}this.setState({lang:n})},
+      roles:ROLES.map(r=>({...r,label:L(r.label),desc:L(r.desc),active:S.loginRole===r.id,border:S.loginRole===r.id?'var(--color-accent)':'var(--color-neutral-800)',iconColor:S.loginRole===r.id?'var(--color-accent)':'var(--color-neutral-500)',pick:()=>this.setState({loginRole:r.id,loginErr:''})})),
       onPin:e=>this.setState({pin:cloud?e.target.value:e.target.value.replace(/\D/g,'').slice(0,4),loginErr:''}),onPinKey:e=>{if(e.key==='Enter')doLogin()},login:doLogin,
       logout:()=>{localStorage.removeItem(SKEY);if(cloud)this.fb.auth.signOut();this.setState({session:null,detailId:null,editingId:null,form:emptyForm(),errs:{}})},
-      roleIcon:ro.icon,roleLabel:ro.label,headerSub:isDelivery?(STORE[S.lStore]||{}).name+' · '+S.lRegion+' region':S.orders.length+' invoices on record',
-      tabs:(tabsBy[role]||[]).map(([id,label,icon])=>({label,icon,color:S.view===id?'var(--color-accent)':'var(--color-neutral-500)',go:()=>{this.setState({view:id});window.scrollTo(0,0)}})),
+      roleIcon:ro.icon,roleLabel:L(ro.label||''),headerSub:isDelivery?L('{0} · {1} region',(STORE[S.lStore]||{}).name,L(S.lRegion)):L('{0} invoices on record',S.orders.length),
+      tabs:(tabsBy[role]||[]).map(([id,label,icon])=>({label:L(label),icon,color:S.view===id?'var(--color-accent)':'var(--color-neutral-500)',go:()=>{this.setState({view:id});window.scrollTo(0,0)}})),
       vNew:S.view==='new',vList:S.view==='list',vDash:S.view==='dash',
       form:f,errs:S.errs,on:{slip:F('slip'),date:F('date'),trans:F('trans'),hh:F('hh'),mm:F('mm'),itemDraft:F('itemDraft'),qtyDraft:F('qtyDraft'),amount:F('amount'),cname:F('cname'),cmobile:F('cmobile'),store:F('store')},
-      todayStr:today(),hours,mins,dupLive:dupLive?'Already registered on '+stamp(dupLive.createdAt)+' for '+STORE[dupLive.store].name+' — this slip cannot be added twice.':'',
-      isEditing:!!S.editingId,formTitle:S.editingId?'Edit invoice':'New invoice',formSub:S.editingId?'Admin edit — changes are logged in the invoice history.':'Every field is required. Once submitted, the invoice is locked — only Admin can edit it.',
-      submitLabel:S.editingId?'Save changes':'Submit invoice',
+      todayStr:today(),hours,mins,dupLive:dupLive?L('Already registered on {0} for {1} — this slip cannot be added twice.',stamp(dupLive.createdAt),STORE[dupLive.store].name):'',
+      isEditing:!!S.editingId,formTitle:L(S.editingId?'Edit invoice':'New invoice'),formSub:L(S.editingId?'Admin edit — changes are logged in the invoice history.':'Every field is required. Once submitted, the invoice is locked — only Admin can edit it.'),
+      submitLabel:L(S.editingId?'Save changes':'Submit invoice'),
       itemKey:e=>{if(e.key==='Enter'){e.preventDefault();this.addItem()}},addItem:()=>this.addItem(),
-      hasItems:f.items.length>0,itemCountLabel:f.items.length?f.items.length+' item'+(f.items.length>1?'s':'')+' · '+qtySum(f.items)+' pcs':'',
+      hasItems:f.items.length>0,itemCountLabel:f.items.length?itemsLbl(f.items.length,qtySum(f.items)):'',
       formItems:NI(f.items).map((it,i,all)=>({code:it.code,qty:it.qty,remove:()=>this.setForm({items:all.filter((_,j)=>j!==i)}),inc:()=>this.setForm({items:all.map((x,j)=>j===i?{...x,qty:x.qty+1}:x)}),dec:()=>this.setForm({items:all.map((x,j)=>j===i?{...x,qty:Math.max(1,x.qty-1)}:x)})})),
-      noPhoto:!f.photo,photoCta:'Take photo of slip',
-      onPhoto:e=>{const file=e.target.files&&e.target.files[0];e.target.value='';if(!file)return;compress(file).then(url=>this.setForm({photo:url})).catch(()=>this.flash('Could not read that image'))},
+      noPhoto:!f.photo,photoCta:L('Take photo of slip'),
+      onPhoto:e=>{const file=e.target.files&&e.target.files[0];e.target.value='';if(!file)return;compress(file).then(url=>this.setForm({photo:url})).catch(()=>this.flash(L('Could not read that image')))},
       viewFormPhoto:()=>this.setState({viewer:f.photo}),viewDetailPhoto:()=>this.setState({viewer:od&&od.photo}),viewer:S.viewer,closeViewer:()=>this.setState({viewer:''}),
-      storeOpts:STORES.map(s=>({id:s.id,label:s.name+' — Region: '+s.region})),
+      storeOpts:STORES.map(s=>({id:s.id,label:L('{0} — Region: {1}',s.name,L(s.region))})),
       submit:()=>{let ff=f;if(ff.itemDraft.trim())ff=this.mergeItems(ff);
-        const e=this.validate(ff);const n=Object.keys(e).length;if(n){this.setState({errs:e,form:ff});this.flash(n===1&&e.slip&&e.slip.startsWith('Duplicate')?'Duplicate slip — not saved.':n+' field'+(n>1?'s need':' needs')+' attention');window.scrollTo(0,0);return}this.setState({confirm:true,form:ff})},
+        const e=this.validate(ff);const n=Object.keys(e).length;if(n){this.setState({errs:e,form:ff});this.flash(n===1&&e.slip&&this.dupOf(ff.slip,S.editingId)?L('Duplicate slip — not saved.'):n>1?L('{0} fields need attention',n):L('1 field needs attention'));window.scrollTo(0,0);return}this.setState({confirm:true,form:ff})},
       cancelEdit:()=>this.setState({editingId:null,form:emptyForm(),errs:{},view:'list'}),
-      confirmOpen:S.confirm,confirmTitle:S.editingId?'Save admin changes?':'Submit this invoice?',confirmAmount:sar(f.amount),confirmStore:f.store?STORE[f.store].name+' · '+STORE[f.store].region:'',
-      confirmNote:S.editingId?'The edit will be recorded in the invoice history.':'After submitting, Order entry cannot change this invoice. It goes straight to the store’s delivery queue.',
+      confirmOpen:S.confirm,confirmTitle:L(S.editingId?'Save admin changes?':'Submit this invoice?'),confirmAmount:sar(f.amount),confirmStore:f.store?STORE[f.store].name+' · '+L(STORE[f.store].region):'',
+      confirmNote:L(S.editingId?'The edit will be recorded in the invoice history.':'After submitting, Order entry cannot change this invoice. It goes straight to the store’s delivery queue.'),
       closeConfirm:()=>this.setState({confirm:false}),
       doSubmit:()=>{if(S.busy)return;const e=this.validate(f);if(Object.keys(e).length){this.setState({confirm:false,errs:e});return}
         const now=new Date().toISOString();const rec={slip:f.slip.trim().toUpperCase(),date:f.date,trans:f.trans.trim(),time:f.hh+':'+f.mm,items:NI(f.items),amount:Math.round(parseFloat(f.amount)*100)/100,cname:f.cname.trim(),cmobile:f.cmobile,photo:f.photo,store:f.store};
         if(S.editingId){const old=S.orders.find(o=>o.id===S.editingId);const labels={slip:'slip',date:'date',trans:'trans',time:'time',items:'items',amount:'amount',cname:'customer',cmobile:'mobile',photo:'photo',store:'store'};
           const ch=Object.keys(labels).filter(k=>JSON.stringify(old[k])!==JSON.stringify(rec[k])).map(k=>labels[k]);
           const hist={at:now,by:'Admin',text:'Edited by Admin'+(ch.length?' — '+ch.join(', '):' — no changes')};const eid=S.editingId;
-          this.run(async()=>{await this.editOrder(eid,rec,hist);this.setState({confirm:false,editingId:null,form:emptyForm(),view:'list',detailId:eid});this.flash('Invoice updated')})}
+          this.run(async()=>{await this.editOrder(eid,rec,hist);this.setState({confirm:false,editingId:null,form:emptyForm(),view:'list',detailId:eid});this.flash(L('Invoice updated'))})}
         else{const by=role==='admin'?'Admin':'Order entry';
-          this.run(async()=>{await this.createOrder(rec,by,now);this.setState({confirm:false,form:emptyForm()});this.flash('Locked & sent to '+STORE[rec.store].name);window.scrollTo(0,0)})}},
-      isDelivery,notDelivery:!isDelivery,listTitle:isDelivery?'Store queue':role==='admin'?'All orders':'Invoices',
-      listSub:isDelivery?'Orders assigned to your store. Tap one to prepare or hand over.':role==='admin'?'Tap any order to review or edit.':'Submitted invoices are read-only.',
+          this.run(async()=>{await this.createOrder(rec,by,now);this.setState({confirm:false,form:emptyForm()});this.flash(L('Locked & sent to {0}',STORE[rec.store].name));window.scrollTo(0,0)})}},
+      isDelivery,notDelivery:!isDelivery,listTitle:L(isDelivery?'Store queue':role==='admin'?'All orders':'Invoices'),
+      listSub:L(isDelivery?'Orders assigned to your store. Tap one to prepare or hand over.':role==='admin'?'Tap any order to review or edit.':'Submitted invoices are read-only.'),
       lRegions,lStore:S.lStore,lStoreOpts,onLStore:e=>setLStore(e.target.value),q:S.q,onQ:e=>this.setState({q:e.target.value}),statusChips,list,listEmpty:!list.length,
-      dashSub:(S.dashStore!=='All'?STORE[S.dashStore].name:S.dashRegion==='All'?'All regions':S.dashRegion+' region')+' · '+T+' orders',
-      dRegions:['All',...REGIONS].map(r=>({label:r,active:S.dashRegion===r,pick:()=>this.setState({dashRegion:r,dashStore:'All'})})),dashStore:S.dashStore,dStoreOpts,onDashStore:e=>this.setState({dashStore:e.target.value}),
-      kpis,totalValue:sar(dl.reduce((a,o)=>a+Number(o.amount),0)),openValueLabel:sar(openVal)+' not yet collected',pipe:{p:pct(P,T),r:pct(R,T),c:pct(Cc,T)},byStore,recent,
-      exportSub:'Every field, readiness and collection record · '+T+' rows in current filter',exportFiltered:()=>this.exportRows(dl,S.dashStore!=='All'?S.dashStore:S.dashRegion.toLowerCase()),exportAll:()=>this.exportRows(sorted,'all'),
+      dashSub:(S.dashStore!=='All'?STORE[S.dashStore].name:S.dashRegion==='All'?L('All regions'):L('{0} region',L(S.dashRegion)))+' · '+L('{0} orders',T),
+      dRegions:['All',...REGIONS].map(r=>({label:L(r),active:S.dashRegion===r,pick:()=>this.setState({dashRegion:r,dashStore:'All'})})),dashStore:S.dashStore,dStoreOpts,onDashStore:e=>this.setState({dashStore:e.target.value}),
+      kpis,totalValue:sar(dl.reduce((a,o)=>a+Number(o.amount),0)),openValueLabel:L('{0} not yet collected',sar(openVal)),pipe:{p:pct(P,T),r:pct(R,T),c:pct(Cc,T)},byStore,recent,
+      exportSub:L('Every field, readiness and collection record · {0} rows in current filter',T),exportFiltered:()=>this.exportRows(dl,S.dashStore!=='All'?S.dashStore:S.dashRegion.toLowerCase()),exportAll:()=>this.exportRows(sorted,'all'),
       hasDetail:!!d,d:d||{},closeDetail:()=>this.setState({delConfirm:false,detailId:null,collect:null,cErrs:{}}),
-      markReady:()=>{if(S.busy)return;const now=new Date().toISOString();this.run(async()=>{await this.patchOrder(od.id,{status:'Ready',readyAt:now},{at:now,by:this.roleName(),text:'Marked ready for delivery'});this.flash('Marked Ready for Delivery')})},
+      markReady:()=>{if(S.busy)return;const now=new Date().toISOString();this.run(async()=>{await this.patchOrder(od.id,{status:'Ready',readyAt:now},{at:now,by:this.roleName(),text:'Marked ready for delivery'});this.flash(L('Marked Ready for Delivery'))})},
       startCollect:()=>{const n=new Date();this.setState({collect:{name:'',mobile:'',date:today(),hh:pad(n.getHours()),mm:pad(Math.floor(n.getMinutes()/step)*step)},cErrs:{}})},
       collectOpen:!!S.collect&&!!od&&od.status==='Ready',collect:S.collect||{},cErrs:S.cErrs,cOn:{name:C('name'),mobile:C('mobile'),date:C('date'),hh:C('hh'),mm:C('mm')},
       sameAsCustomer:()=>this.setState(s=>({collect:{...s.collect,name:od.cname,mobile:od.cmobile},cErrs:{}})),cancelCollect:()=>this.setState({collect:null,cErrs:{}}),
-      confirmCollect:()=>{const c=S.collect;const e={};if(!c.name.trim())e.name='Enter the receiver’s name';if(!MOB.test(c.mobile))e.mobile='Saudi mobile — 10 digits starting 05';if(!c.date)e.date='Pick the collection date';else if(c.date<od.date)e.date='Cannot be before the invoice date';if(!c.hh||!c.mm)e.time='Select hour and minute';
+      confirmCollect:()=>{const c=S.collect;const e={};if(!c.name.trim())e.name=L('Enter the receiver’s name');if(!MOB.test(c.mobile))e.mobile=L('Saudi mobile — 10 digits starting 05');if(!c.date)e.date=L('Pick the collection date');else if(c.date<od.date)e.date=L('Cannot be before the invoice date');if(!c.hh||!c.mm)e.time=L('Select hour and minute');
         if(Object.keys(e).length){this.setState({cErrs:e});return}const now=new Date().toISOString();
-        if(S.busy)return;this.run(async()=>{await this.patchOrder(od.id,{status:'Collected',collected:{name:c.name.trim(),mobile:c.mobile,date:c.date,time:c.hh+':'+c.mm,at:now}},{at:now,by:this.roleName(),text:'Collected by '+c.name.trim()});this.setState({collect:null});this.flash('Collection recorded')})},
+        if(S.busy)return;this.run(async()=>{await this.patchOrder(od.id,{status:'Collected',collected:{name:c.name.trim(),mobile:c.mobile,date:c.date,time:c.hh+':'+c.mm,at:now}},{at:now,by:this.roleName(),text:'Collected by '+c.name.trim()});this.setState({collect:null});this.flash(L('Collection recorded'))})},
       editDetail:()=>{const [hh,mm]=(od.time||':').split(':');this.setState({editingId:od.id,detailId:null,view:'new',errs:{},form:{slip:od.slip,date:od.date,trans:od.trans,hh,mm,itemDraft:'',items:NI(od.items),qtyDraft:'1',amount:String(od.amount),cname:od.cname,cmobile:od.cmobile,photo:od.photo,store:od.store}});window.scrollTo(0,0)},
-      toast:S.toast,delOpen:!!S.delConfirm&&!!od,delLabel:S.busy?'Deleting…':'Delete invoice',askDelete:()=>this.setState({delConfirm:true}),closeDelete:()=>this.setState({delConfirm:false}),
-      doDelete:()=>{if(S.busy||role!=='admin')return;const id=od.id;this.run(async()=>{await this.deleteOrder(id);this.setState({delConfirm:false,detailId:null});this.flash('Invoice deleted')}).then(()=>this.setState({delConfirm:false}))},
+      toast:S.toast,delOpen:!!S.delConfirm&&!!od,delLabel:L(S.busy?'Deleting…':'Delete invoice'),askDelete:()=>this.setState({delConfirm:true}),closeDelete:()=>this.setState({delConfirm:false}),
+      doDelete:()=>{if(S.busy||role!=='admin')return;const id=od.id;this.run(async()=>{await this.deleteOrder(id);this.setState({delConfirm:false,detailId:null});this.flash(L('Invoice deleted'))}).then(()=>this.setState({delConfirm:false}))},
       formPhotoStyle:ph(f.photo,{width:84,height:112}),detailPhotoStyle:ph(od&&od.photo,{width:96,height:132}),viewerStyle:ph(S.viewer,{width:'100%',height:'92vh',backgroundSize:'contain',backgroundPosition:'center',boxShadow:'none',cursor:'zoom-out'})
     };
   }
