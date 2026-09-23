@@ -146,7 +146,7 @@
     </sc-if>
     <sc-if value="{{ form.photo }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;gap:12px;align-items:center">
-        <div role="img" aria-label="Slip" onClick="{{ viewFormPhoto }}" style="width:84px;height:112px;flex:none;background:center top / cover no-repeat url({{ form.photo }});border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);cursor:zoom-in"></div>
+        <div role="img" aria-label="Slip" onClick="{{ viewFormPhoto }}" style="{{ formPhotoStyle }}"></div>
         <div style="display:flex;flex-direction:column;gap:6px;flex:1">
           <span style="display:flex;gap:6px;align-items:center;font-size:13px"><i class="ph ph-check-circle" style="color:var(--color-accent)"></i>Slip attached</span>
           <label class="btn btn-secondary" style="min-height:40px;align-self:flex-start"><input type="file" accept="image/*" capture="environment" onChange="{{ onPhoto }}" style="display:none"><i class="ph ph-arrows-clockwise"></i>Retake</label>
@@ -303,7 +303,7 @@
     </div>
     <sc-if value="{{ d.locked }}"><div style="display:flex;gap:8px;align-items:center;font-size:12px;padding:8px 10px;border-radius:var(--radius-md);background:var(--color-neutral-900);color:var(--color-neutral-300)"><i class="ph ph-lock-simple"></i>Locked after submission — only Admin can edit.</div></sc-if>
     <div style="display:flex;gap:14px">
-      <sc-if value="{{ d.photo }}" hint-placeholder-val="{{ false }}"><div role="img" aria-label="Slip photo" onClick="{{ viewDetailPhoto }}" style="width:96px;height:132px;flex:none;background:center top / cover no-repeat url({{ d.photo }});border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);cursor:zoom-in"></div></sc-if>
+      <sc-if value="{{ d.photo }}" hint-placeholder-val="{{ false }}"><div role="img" aria-label="Slip photo" onClick="{{ viewDetailPhoto }}" style="{{ detailPhotoStyle }}"></div></sc-if>
       <sc-if value="{{ d.noPhoto }}"><div style="width:96px;height:132px;flex:none;display:grid;place-items:center;border-radius:var(--radius-sm);border:1px dashed var(--color-neutral-700);color:var(--color-neutral-600)"><i class="ph ph-image" style="font-size:24px"></i></div></sc-if>
       <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-width:0">
         <div><div class="text-muted" style="font-size:11px">Net amount</div><div style="font-size:22px;font-weight:500;font-variant-numeric:tabular-nums">{{ d.amountF }} <span class="text-muted" style="font-size:12px">SAR</span></div></div>
@@ -386,7 +386,7 @@
 
 <sc-if value="{{ viewer }}" hint-placeholder-val="{{ false }}">
 <div onClick="{{ closeViewer }}" style="position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:16px;background:color-mix(in srgb,var(--color-neutral-900) 92%,transparent);cursor:zoom-out">
-  <div role="img" aria-label="Slip" style="width:100%;height:92vh;background:center / contain no-repeat url({{ viewer }})"></div>
+  <div role="img" aria-label="Slip" style="{{ viewerStyle }}"></div>
 </div>
 </sc-if>
 
@@ -512,6 +512,7 @@ class Component extends DCLogic {
     const S=this.state,p=this.props;const sess=S.session;const role=sess&&sess.role;const cloud=S.mode==='cloud';
     const step=Number(p.minuteStep??1)||1;
     const hours=[...Array(24)].map((_,i)=>pad(i));const mins=[...Array(Math.ceil(60/step))].map((_,i)=>pad(i*step));
+    const ph=(u,x)=>({flex:'none',backgroundImage:u?'url("'+u+'")':'none',backgroundSize:'cover',backgroundPosition:'center top',backgroundRepeat:'no-repeat',borderRadius:'var(--radius-sm)',boxShadow:'var(--shadow-sm)',cursor:'zoom-in',...x});
     const vm=o=>{const s=STORE[o.store]||{};const n=o.items.length;return {...o,storeName:s.name,region:s.region,dateF:fmtDate(o.date),amountF:sar(o.amount),itemsLabel:n+' item'+(n===1?'':'s'),statusLabel:SL[o.status],tagClass:TAG[o.status],open:()=>this.setState({detailId:o.id,collect:null,cErrs:{}})}};
     const sorted=S.orders.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
     const F=k=>e=>{let v=e.target.value;if(k==='amount')v=v.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1');if(k==='cmobile'||k==='trans')v=v.replace(/\D/g,'').slice(0,k==='cmobile'?10:12);this.setForm({[k]:v})};
@@ -601,7 +602,8 @@ class Component extends DCLogic {
         if(Object.keys(e).length){this.setState({cErrs:e});return}const now=new Date().toISOString();
         if(S.busy)return;this.run(async()=>{await this.patchOrder(od.id,{status:'Collected',collected:{name:c.name.trim(),mobile:c.mobile,date:c.date,time:c.hh+':'+c.mm,at:now}},{at:now,by:this.roleName(),text:'Collected by '+c.name.trim()});this.setState({collect:null});this.flash('Collection recorded')})},
       editDetail:()=>{const [hh,mm]=(od.time||':').split(':');this.setState({editingId:od.id,detailId:null,view:'new',errs:{},form:{slip:od.slip,date:od.date,trans:od.trans,hh,mm,itemDraft:'',items:[...od.items],amount:String(od.amount),cname:od.cname,cmobile:od.cmobile,photo:od.photo,store:od.store}});window.scrollTo(0,0)},
-      toast:S.toast
+      toast:S.toast,
+      formPhotoStyle:ph(f.photo,{width:84,height:112}),detailPhotoStyle:ph(od&&od.photo,{width:96,height:132}),viewerStyle:ph(S.viewer,{width:'100%',height:'92vh',backgroundSize:'contain',backgroundPosition:'center',boxShadow:'none',cursor:'zoom-out'})
     };
   }
 }
