@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="_ds/nocturne-d4c5b88c-0472-4e96-b2a2-9c91ab25596b/styles.css">
+<script src="_ds/nocturne-d4c5b88c-0472-4e96-b2a2-9c91ab25596b/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>:root{color-scheme:dark}body{margin:0;-webkit-tap-highlight-color:transparent}a{color:var(--color-accent)}a:hover{color:var(--color-accent-300)}select.input{appearance:none;-webkit-appearance:none}</style>
+</helmet>
+<div style="min-height:100vh;display:flex;justify-content:center">
+<div style="position:relative;width:100%;max-width:440px;min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--color-surface) -30%,var(--color-bg) 26%);box-shadow:var(--shadow-sm)">
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;padding:40px 22px">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:center;gap:10px;color:var(--color-accent)"><i class="ph ph-receipt" style="font-size:22px"></i><span style="width:32px;height:1px;background:var(--color-accent)"></span><i class="ph ph-package" style="font-size:22px"></i></div>
+    <h2 style="margin:0">Invoice to Delivery</h2>
+    <p class="text-muted" style="margin:0;font-size:14px;text-wrap:pretty">Register a customer slip, hand it to the store, and track it until the customer collects.</p>
+  </div>
+  <sc-if value="{{ showRoles }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500)">Sign in as</div>
+    <sc-for list="{{ roles }}" as="r" hint-placeholder-count="3">
+      <button onClick="{{ r.pick }}" style="display:flex;align-items:center;gap:14px;min-height:64px;padding:12px 14px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid {{ r.border }};color:var(--color-text);text-align:left;cursor:pointer;font:inherit">
+        <i class="ph {{ r.icon }}" style="font-size:22px;color:{{ r.iconColor }}"></i>
+        <span style="display:flex;flex-direction:column;flex:1;gap:2px"><span style="font-size:15px;font-weight:500">{{ r.label }}</span><span class="text-muted" style="font-size:12px;line-height:1.35">{{ r.desc }}</span></span>
+        <sc-if value="{{ r.active }}"><i class="ph ph-check-circle" style="color:var(--color-accent);font-size:20px"></i></sc-if>
+      </button>
+    </sc-for>
+  </div>
+  </sc-if>
+  <sc-if value="{{ cloudLogin }}" hint-placeholder-val="{{ false }}">
+    <div class="field"><label>User ID</label><input class="input" value="{{ userId }}" onChange="{{ onUserId }}" placeholder="e.g. thager01" autocapitalize="none" autocomplete="username" style="min-height:48px;font-size:16px"></div>
+  </sc-if>
+  <sc-if value="{{ requirePin }}" hint-placeholder-val="{{ true }}">
+    <div class="field"><label>{{ pinLabel }}</label><input class="input" type="password" inputmode="{{ pinMode }}" maxlength="{{ pinMax }}" value="{{ pin }}" onChange="{{ onPin }}" onKeyDown="{{ onPinKey }}" placeholder="{{ pinPh }}" style="min-height:48px;font-size:16px"></div>
+  </sc-if>
+  <sc-if value="{{ loginErr }}"><div style="display:flex;gap:6px;align-items:center;font-size:13px;color:var(--color-accent-200)"><i class="ph ph-warning"></i><span>{{ loginErr }}</span></div></sc-if>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-primary" onClick="{{ login }}" disabled="{{ loginDisabled }}" style="min-height:48px;width:100%;font-size:15px">{{ loginLabel }}</button>
+    <sc-if value="{{ showDemoPins }}"><p class="text-muted" style="font-size:12px;margin:0">Demo PINs — Order 1111 · Delivery 2222 · Admin 9999</p></sc-if>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isApp }}">
+<header style="position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:12px 16px;background:color-mix(in srgb,var(--color-bg) 88%,transparent);backdrop-filter:blur(10px)">
+  <i class="ph {{ roleIcon }}" style="font-size:20px;color:var(--color-accent)"></i>
+  <div style="display:flex;flex-direction:column;flex:1;line-height:1.2">
+    <span style="font-size:15px;font-weight:500">{{ roleLabel }}</span>
+    <span class="text-muted" style="font-size:11px">{{ headerSub }}</span>
+  </div>
+  <span class="tag tag-neutral" style="white-space:nowrap;flex:none">{{ modeLabel }}</span>
+  <button class="btn btn-secondary btn-icon" onClick="{{ logout }}" aria-label="Sign out" style="width:44px;height:44px"><i class="ph ph-sign-out" style="font-size:18px"></i></button>
+</header>
+
+<main style="flex:1;display:flex;flex-direction:column;gap:16px;padding:8px 16px 104px">
+
+<sc-if value="{{ vNew }}">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h3 style="margin:0">{{ formTitle }}</h3>
+    <p class="text-muted" style="margin:0;font-size:13px;text-wrap:pretty">{{ formSub }}</p>
+  </div>
+
+  <div class="card elev-sm" style="gap:12px;padding:14px">
+    <div class="card-kicker">Slip</div>
+    <div class="field"><label>Slip No.</label>
+      <input class="input" value="{{ form.slip }}" onChange="{{ on.slip }}" placeholder="000000RY59000022354" autocapitalize="characters" style="min-height:44px;font-family:ui-monospace,Menlo,monospace;letter-spacing:.02em">
+      <sc-if value="{{ errs.slip }}"><div style="display:flex;gap:6px;margin-top:6px;font-size:12px;color:var(--color-accent-200)"><i class="ph ph-warning" style="margin-top:2px"></i><span>{{ errs.slip }}</span></div></sc-if>
+      <sc-if value="{{ dupLive }}"><div style="display:flex;gap:6px;margin-top:6px;font-size:12px;color:var(--color-accent-200)"><i class="ph ph-prohibit" style="margin-top:2px"></i><span>{{ dupLive }}</span></div></sc-if>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px">
+      <div class="field"><label>Date</label>
+        <input class="input" type="date" value="{{ form.date }}" onChange="{{ on.date }}" max="{{ todayStr }}" style="min-height:44px;color-scheme:dark">
+        <sc-if value="{{ errs.date }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.date }}</div></sc-if>
+      </div>
+      <div class="field"><label>Trans</label>
+        <input class="input" inputmode="numeric" value="{{ form.trans }}" onChange="{{ on.trans }}" placeholder="37133" style="min-height:44px;font-family:ui-monospace,Menlo,monospace">
+        <sc-if value="{{ errs.trans }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.trans }}</div></sc-if>
+      </div>
+    </div>
+    <div class="field"><label>Time</label>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center">
+        <select class="input" value="{{ form.hh }}" onChange="{{ on.hh }}" style="min-height:44px"><option value="">Hour</option><sc-for list="{{ hours }}" as="h"><option value="{{ h }}">{{ h }}</option></sc-for></select>
+        <span class="text-muted">:</span>
+        <select class="input" value="{{ form.mm }}" onChange="{{ on.mm }}" style="min-height:44px"><option value="">Min</option><sc-for list="{{ mins }}" as="m"><option value="{{ m }}">{{ m }}</option></sc-for></select>
+      </div>
+      <sc-if value="{{ errs.time }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.time }}</div></sc-if>
+    </div>
+  </div>
+
+  <div class="card elev-sm" style="gap:12px;padding:14px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between"><div class="card-kicker" style="white-space:nowrap;flex:none">Items &amp; amount</div><span class="text-muted" style="font-size:12px">{{ itemCountLabel }}</span></div>
+    <div class="field"><label>Item numbers</label>
+      <div style="display:flex;gap:8px">
+        <input class="input" value="{{ form.itemDraft }}" onChange="{{ on.itemDraft }}" onKeyDown="{{ itemKey }}" placeholder="e.g. 26-1438" style="min-height:44px;font-family:ui-monospace,Menlo,monospace">
+        <button class="btn btn-secondary" onClick="{{ addItem }}" style="min-height:44px;min-width:64px"><i class="ph ph-plus"></i>Add</button>
+      </div>
+      <sc-if value="{{ hasItems }}">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+          <sc-for list="{{ formItems }}" as="it">
+            <span class="tag tag-neutral" style="gap:6px;padding:4px 4px 4px 10px;font-family:ui-monospace,Menlo,monospace;font-size:12px">{{ it.code }}<button onClick="{{ it.remove }}" aria-label="Remove" style="display:grid;place-items:center;width:22px;height:22px;border:0;border-radius:4px;background:transparent;color:inherit;cursor:pointer"><i class="ph ph-x"></i></button></span>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ errs.items }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.items }}</div></sc-if>
+    </div>
+    <div class="field"><label>Total invoice amount — net after savings &amp; discounts</label>
+      <div style="position:relative">
+        <span class="text-muted" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px">SAR</span>
+        <input class="input" inputmode="decimal" value="{{ form.amount }}" onChange="{{ on.amount }}" placeholder="5,771.00" style="min-height:44px;padding-left:46px;font-size:16px;font-variant-numeric:tabular-nums">
+      </div>
+      <sc-if value="{{ errs.amount }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.amount }}</div></sc-if>
+    </div>
+  </div>
+
+  <div class="card elev-sm" style="gap:12px;padding:14px">
+    <div class="card-kicker">Customer</div>
+    <div class="field"><label>Customer name</label>
+      <input class="input" value="{{ form.cname }}" onChange="{{ on.cname }}" placeholder="Full name" autocomplete="off" style="min-height:44px">
+      <sc-if value="{{ errs.cname }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.cname }}</div></sc-if>
+    </div>
+    <div class="field"><label>Mobile number</label>
+      <input class="input" type="tel" inputmode="numeric" value="{{ form.cmobile }}" onChange="{{ on.cmobile }}" placeholder="05XXXXXXXX" style="min-height:44px;font-variant-numeric:tabular-nums;letter-spacing:.04em">
+      <sc-if value="{{ errs.cmobile }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.cmobile }}</div></sc-if>
+    </div>
+  </div>
+
+  <div class="card elev-sm" style="gap:12px;padding:14px">
+    <div class="card-kicker">Slip photo</div>
+    <sc-if value="{{ noPhoto }}">
+      <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:132px;border:1px dashed var(--color-neutral-700);border-radius:var(--radius-md);cursor:pointer;color:var(--color-accent);text-align:center;padding:16px">
+        <input type="file" accept="image/*" capture="environment" onChange="{{ onPhoto }}" style="display:none">
+        <i class="ph ph-camera" style="font-size:28px"></i>
+        <span style="font-size:14px;font-weight:500">{{ photoCta }}</span>
+        <span class="text-muted" style="font-size:12px">Opens the camera on phones · compressed before saving</span>
+      </label>
+    </sc-if>
+    <sc-if value="{{ form.photo }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div role="img" aria-label="Slip" onClick="{{ viewFormPhoto }}" style="width:84px;height:112px;flex:none;background:center top / cover no-repeat url({{ form.photo }});border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);cursor:zoom-in"></div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex:1">
+          <span style="display:flex;gap:6px;align-items:center;font-size:13px"><i class="ph ph-check-circle" style="color:var(--color-accent)"></i>Slip attached</span>
+          <label class="btn btn-secondary" style="min-height:40px;align-self:flex-start"><input type="file" accept="image/*" capture="environment" onChange="{{ onPhoto }}" style="display:none"><i class="ph ph-arrows-clockwise"></i>Retake</label>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ errs.photo }}"><div style="font-size:12px;color:var(--color-accent-200)">{{ errs.photo }}</div></sc-if>
+  </div>
+
+  <div class="card elev-sm" style="gap:12px;padding:14px">
+    <div class="card-kicker">Assign store</div>
+    <div class="field">
+      <div style="position:relative">
+        <select class="input" value="{{ form.store }}" onChange="{{ on.store }}" style="min-height:44px;padding-right:34px"><option value="">Select store</option><sc-for list="{{ storeOpts }}" as="s"><option value="{{ s.id }}">{{ s.label }}</option></sc-for></select>
+        <i class="ph ph-caret-down" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-neutral-500)"></i>
+      </div>
+      <sc-if value="{{ errs.store }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ errs.store }}</div></sc-if>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <button class="btn btn-primary" onClick="{{ submit }}" style="min-height:50px;width:100%;font-size:15px"><i class="ph ph-lock-simple"></i>{{ submitLabel }}</button>
+    <sc-if value="{{ isEditing }}"><button class="btn btn-secondary" onClick="{{ cancelEdit }}" style="min-height:44px;width:100%">Cancel edit</button></sc-if>
+  </div>
+</sc-if>
+
+<sc-if value="{{ vList }}">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h3 style="margin:0">{{ listTitle }}</h3>
+    <p class="text-muted" style="margin:0;font-size:13px">{{ listSub }}</p>
+  </div>
+  <sc-if value="{{ isDelivery }}">
+    <div class="card elev-sm" style="gap:10px;padding:14px">
+      <div class="card-kicker">Your store</div>
+      <div class="seg" style="display:flex">
+        <sc-for list="{{ lRegions }}" as="r"><label class="seg-opt" style="flex:1;justify-content:center;min-height:40px"><input type="radio" name="lreg" checked="{{ r.active }}" onChange="{{ r.pick }}"><span>{{ r.label }}</span></label></sc-for>
+      </div>
+      <div style="position:relative">
+        <select class="input" value="{{ lStore }}" onChange="{{ onLStore }}" style="min-height:44px;padding-right:34px"><sc-for list="{{ lStoreOpts }}" as="s"><option value="{{ s.id }}">{{ s.label }}</option></sc-for></select>
+        <i class="ph ph-caret-down" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-neutral-500)"></i>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ notDelivery }}">
+    <div style="position:relative">
+      <select class="input" value="{{ lStore }}" onChange="{{ onLStore }}" style="min-height:44px;padding-right:34px"><sc-for list="{{ lStoreOpts }}" as="s"><option value="{{ s.id }}">{{ s.label }}</option></sc-for></select>
+      <i class="ph ph-caret-down" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-neutral-500)"></i>
+    </div>
+  </sc-if>
+  <div style="position:relative">
+    <i class="ph ph-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--color-neutral-500)"></i>
+    <input class="input" value="{{ q }}" onChange="{{ onQ }}" placeholder="Slip, trans, customer, mobile, item" style="min-height:44px;padding-left:36px">
+  </div>
+  <div class="seg" style="display:flex">
+    <sc-for list="{{ statusChips }}" as="c"><label class="seg-opt" style="flex:1;justify-content:center;min-height:40px;padding:6px 4px;font-size:12px;gap:4px"><input type="radio" name="stf" checked="{{ c.active }}" onChange="{{ c.pick }}"><span>{{ c.label }}</span><span class="text-muted">{{ c.n }}</span></label></sc-for>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <sc-for list="{{ list }}" as="o" hint-placeholder-count="4">
+      <button onClick="{{ o.open }}" class="card elev-sm" style="border:0;text-align:left;color:var(--color-text);font:inherit;cursor:pointer;padding:12px 14px;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="flex:1;font-family:ui-monospace,Menlo,monospace;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.slip }}</span>
+          <span class="tag {{ o.tagClass }}">{{ o.statusLabel }}</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px">
+          <span style="flex:1;font-size:15px;font-weight:500">{{ o.cname }}</span>
+          <span style="font-size:15px;font-variant-numeric:tabular-nums">{{ o.amountF }}<span class="text-muted" style="font-size:11px;margin-left:3px">SAR</span></span>
+        </div>
+        <div class="card-meta" style="flex-wrap:wrap"><i class="ph ph-storefront"></i><span>{{ o.storeName }} · {{ o.region }}</span><span>·</span><span>{{ o.dateF }} {{ o.time }}</span><span>·</span><span>{{ o.itemsLabel }}</span></div>
+      </button>
+    </sc-for>
+    <sc-if value="{{ listEmpty }}"><div class="text-muted" style="padding:32px 4px;font-size:13px;text-align:left">No invoices match these filters.</div></sc-if>
+  </div>
+</sc-if>
+
+<sc-if value="{{ vDash }}">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h3 style="margin:0">Dashboard</h3>
+    <p class="text-muted" style="margin:0;font-size:13px">{{ dashSub }}</p>
+  </div>
+  <div class="seg" style="display:flex">
+    <sc-for list="{{ dRegions }}" as="r"><label class="seg-opt" style="flex:1;justify-content:center;min-height:40px"><input type="radio" name="dreg" checked="{{ r.active }}" onChange="{{ r.pick }}"><span>{{ r.label }}</span></label></sc-for>
+  </div>
+  <div style="position:relative">
+    <select class="input" value="{{ dashStore }}" onChange="{{ onDashStore }}" style="min-height:44px;padding-right:34px"><sc-for list="{{ dStoreOpts }}" as="s"><option value="{{ s.id }}">{{ s.label }}</option></sc-for></select>
+    <i class="ph ph-caret-down" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-neutral-500)"></i>
+  </div>
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px">
+    <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+      <button onClick="{{ k.go }}" class="card elev-sm" style="border:0;text-align:left;color:var(--color-text);font:inherit;cursor:pointer;padding:12px 14px;gap:2px">
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-neutral-400)"><span style="width:8px;height:8px;border-radius:2px;background:{{ k.color }}"></span>{{ k.label }}</span>
+        <span style="font-size:30px;line-height:1.1;font-weight:500;font-variant-numeric:tabular-nums">{{ k.n }}</span>
+      </button>
+    </sc-for>
+  </div>
+  <div class="card elev-sm" style="padding:14px;gap:10px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px"><span class="card-kicker">Net invoice value</span><span class="text-muted" style="font-size:12px">{{ openValueLabel }}</span></div>
+    <div style="font-size:26px;font-weight:500;font-variant-numeric:tabular-nums">{{ totalValue }} <span class="text-muted" style="font-size:13px">SAR</span></div>
+    <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--color-neutral-900);gap:2px">
+      <span style="width:{{ pipe.p }};background:var(--color-neutral-600)"></span><span style="width:{{ pipe.r }};background:var(--color-accent)"></span><span style="width:{{ pipe.c }};background:var(--color-accent-300)"></span>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500)">By store</div>
+    <sc-for list="{{ byStore }}" as="s" hint-placeholder-count="3">
+      <div class="card elev-sm" style="padding:12px 14px;gap:8px">
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="flex:1;font-size:15px;font-weight:500">{{ s.name }}</span><span class="text-muted" style="font-size:12px">{{ s.region }}</span></div>
+        <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--color-neutral-900);gap:2px">
+          <span style="width:{{ s.pp }};background:var(--color-neutral-600)"></span><span style="width:{{ s.rp }};background:var(--color-accent)"></span><span style="width:{{ s.cp }};background:var(--color-accent-300)"></span>
+        </div>
+        <div class="card-meta" style="gap:12px;font-size:12px"><span>{{ s.p }} awaiting</span><span>{{ s.r }} ready</span><span>{{ s.c }} collected</span><span style="margin-left:auto;font-variant-numeric:tabular-nums">{{ s.value }} SAR</span></div>
+      </div>
+    </sc-for>
+  </div>
+  <div class="card elev-sm" style="padding:14px;gap:10px">
+    <div style="display:flex;align-items:center;gap:10px"><i class="ph ph-microsoft-excel-logo" style="font-size:22px;color:var(--color-accent)"></i><div style="display:flex;flex-direction:column;flex:1"><span style="font-size:15px;font-weight:500">Excel report</span><span class="text-muted" style="font-size:12px">{{ exportSub }}</span></div></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px">
+      <button class="btn btn-primary" onClick="{{ exportFiltered }}" style="min-height:44px">Filtered</button>
+      <button class="btn btn-secondary" onClick="{{ exportAll }}" style="min-height:44px">All raw data</button>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500);margin-bottom:6px">Recent activity</div>
+    <sc-for list="{{ recent }}" as="a" hint-placeholder-count="5">
+      <button onClick="{{ a.open }}" style="display:flex;gap:10px;align-items:flex-start;padding:8px 2px;border:0;background:transparent;color:var(--color-text);font:inherit;text-align:left;cursor:pointer;min-height:44px">
+        <i class="ph {{ a.icon }}" style="font-size:16px;margin-top:2px;color:var(--color-accent)"></i>
+        <span style="display:flex;flex-direction:column;flex:1;gap:1px"><span style="font-size:13px">{{ a.text }}</span><span class="text-muted" style="font-size:11px">{{ a.when }} · {{ a.slipShort }} · {{ a.storeName }}</span></span>
+      </button>
+    </sc-for>
+  </div>
+</sc-if>
+</main>
+
+<nav style="position:sticky;bottom:0;z-index:5;display:flex;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--color-bg) 92%,transparent);backdrop-filter:blur(10px);box-shadow:0 -1px 0 var(--color-neutral-800)">
+  <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+    <button onClick="{{ t.go }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:52px;justify-content:center;border:0;background:transparent;font:inherit;font-size:11px;cursor:pointer;color:{{ t.color }}">
+      <i class="ph {{ t.icon }}" style="font-size:22px"></i><span>{{ t.label }}</span>
+    </button>
+  </sc-for>
+</nav>
+</sc-if>
+
+<sc-if value="{{ hasDetail }}">
+<div style="position:fixed;inset:0;z-index:20;display:flex;justify-content:center;background:color-mix(in srgb,var(--color-neutral-900) 60%,transparent)">
+<div style="width:100%;max-width:440px;height:100%;overflow:auto;background:var(--color-bg);box-shadow:var(--shadow-md);display:flex;flex-direction:column">
+  <div style="position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:10px 12px;background:color-mix(in srgb,var(--color-bg) 90%,transparent);backdrop-filter:blur(10px)">
+    <button class="btn btn-secondary btn-icon" onClick="{{ closeDetail }}" aria-label="Back" style="width:44px;height:44px"><i class="ph ph-caret-left" style="font-size:18px"></i></button>
+    <span style="flex:1;font-size:15px;font-weight:500">Invoice</span>
+    <span class="tag {{ d.tagClass }}">{{ d.statusLabel }}</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px;padding:6px 16px 32px">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <span style="font-family:ui-monospace,Menlo,monospace;font-size:17px;word-break:break-all">{{ d.slip }}</span>
+      <span class="text-muted" style="font-size:13px;display:flex;gap:6px;align-items:center"><i class="ph ph-storefront"></i>{{ d.storeName }} · {{ d.region }} region</span>
+    </div>
+    <sc-if value="{{ d.locked }}"><div style="display:flex;gap:8px;align-items:center;font-size:12px;padding:8px 10px;border-radius:var(--radius-md);background:var(--color-neutral-900);color:var(--color-neutral-300)"><i class="ph ph-lock-simple"></i>Locked after submission — only Admin can edit.</div></sc-if>
+    <div style="display:flex;gap:14px">
+      <sc-if value="{{ d.photo }}" hint-placeholder-val="{{ false }}"><div role="img" aria-label="Slip photo" onClick="{{ viewDetailPhoto }}" style="width:96px;height:132px;flex:none;background:center top / cover no-repeat url({{ d.photo }});border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);cursor:zoom-in"></div></sc-if>
+      <sc-if value="{{ d.noPhoto }}"><div style="width:96px;height:132px;flex:none;display:grid;place-items:center;border-radius:var(--radius-sm);border:1px dashed var(--color-neutral-700);color:var(--color-neutral-600)"><i class="ph ph-image" style="font-size:24px"></i></div></sc-if>
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-width:0">
+        <div><div class="text-muted" style="font-size:11px">Net amount</div><div style="font-size:22px;font-weight:500;font-variant-numeric:tabular-nums">{{ d.amountF }} <span class="text-muted" style="font-size:12px">SAR</span></div></div>
+        <div><div class="text-muted" style="font-size:11px">Customer</div><div style="font-size:14px">{{ d.cname }}</div><a href="{{ d.tel }}" style="font-size:13px;text-decoration:none">{{ d.cmobile }}</a></div>
+      </div>
+    </div>
+    <div class="card elev-sm" style="padding:12px 14px;gap:0;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:16px;row-gap:8px;font-size:13px">
+      <span class="text-muted">Date</span><span>{{ d.dateF }}</span>
+      <span class="text-muted">Time</span><span>{{ d.time }}</span>
+      <span class="text-muted">Trans</span><span style="font-family:ui-monospace,Menlo,monospace">{{ d.trans }}</span>
+      <span class="text-muted">Items</span><span style="display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ d.items }}" as="it"><span class="tag tag-neutral" style="font-family:ui-monospace,Menlo,monospace">{{ it }}</span></sc-for></span>
+      <span class="text-muted">Entered</span><span>{{ d.createdF }} · {{ d.createdBy }}</span>
+    </div>
+    <sc-if value="{{ d.collected }}">
+      <div class="card elev-sm" style="padding:12px 14px;gap:0;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:16px;row-gap:8px;font-size:13px">
+        <span class="card-kicker" style="grid-column:1/-1;margin-bottom:2px">Collected by</span>
+        <span class="text-muted">Receiver</span><span>{{ d.collected.name }}</span>
+        <span class="text-muted">Mobile</span><span>{{ d.collected.mobile }}</span>
+        <span class="text-muted">Collected</span><span>{{ d.collectedF }}</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ d.canReady }}"><button class="btn btn-primary" onClick="{{ markReady }}" style="min-height:50px;width:100%;font-size:15px"><i class="ph ph-package"></i>Mark Ready for Delivery</button></sc-if>
+    <sc-if value="{{ d.canCollectBtn }}"><button class="btn btn-primary" onClick="{{ startCollect }}" style="min-height:50px;width:100%;font-size:15px"><i class="ph ph-handshake"></i>Record customer collection</button></sc-if>
+    <sc-if value="{{ collectOpen }}">
+      <div class="card elev-md" style="padding:14px;gap:12px">
+        <div class="card-kicker">Collection</div>
+        <div class="field"><label>Receiver name</label><input class="input" value="{{ collect.name }}" onChange="{{ cOn.name }}" placeholder="Person collecting" style="min-height:44px"><sc-if value="{{ cErrs.name }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ cErrs.name }}</div></sc-if></div>
+        <div class="field"><label>Receiver mobile</label><input class="input" type="tel" inputmode="numeric" value="{{ collect.mobile }}" onChange="{{ cOn.mobile }}" placeholder="05XXXXXXXX" style="min-height:44px"><sc-if value="{{ cErrs.mobile }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ cErrs.mobile }}</div></sc-if></div>
+        <button class="btn btn-ghost" onClick="{{ sameAsCustomer }}" style="align-self:flex-start;min-height:36px;font-size:13px">Same as customer</button>
+        <div class="field"><label>Date collected</label><input class="input" type="date" value="{{ collect.date }}" onChange="{{ cOn.date }}" max="{{ todayStr }}" style="min-height:44px;color-scheme:dark"><sc-if value="{{ cErrs.date }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ cErrs.date }}</div></sc-if></div>
+        <div class="field"><label>Time collected</label>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center">
+            <select class="input" value="{{ collect.hh }}" onChange="{{ cOn.hh }}" style="min-height:44px"><option value="">Hour</option><sc-for list="{{ hours }}" as="h"><option value="{{ h }}">{{ h }}</option></sc-for></select>
+            <span class="text-muted">:</span>
+            <select class="input" value="{{ collect.mm }}" onChange="{{ cOn.mm }}" style="min-height:44px"><option value="">Min</option><sc-for list="{{ mins }}" as="m"><option value="{{ m }}">{{ m }}</option></sc-for></select>
+          </div>
+          <sc-if value="{{ cErrs.time }}"><div style="margin-top:6px;font-size:12px;color:var(--color-accent-200)">{{ cErrs.time }}</div></sc-if>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px">
+          <button class="btn btn-secondary" onClick="{{ cancelCollect }}" style="min-height:48px">Cancel</button>
+          <button class="btn btn-primary" onClick="{{ confirmCollect }}" style="min-height:48px"><i class="ph ph-check-circle"></i>Confirm collected</button>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ d.canEdit }}"><button class="btn btn-secondary" onClick="{{ editDetail }}" style="min-height:48px;width:100%"><i class="ph ph-pencil-simple"></i>Edit invoice (Admin)</button></sc-if>
+
+    <div style="display:flex;flex-direction:column;gap:0;margin-top:4px">
+      <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500);margin-bottom:8px">History</div>
+      <sc-for list="{{ d.timeline }}" as="h">
+        <div style="display:flex;gap:10px;padding-bottom:10px">
+          <span style="width:8px;height:8px;margin-top:6px;flex:none;border-radius:50%;background:var(--color-accent)"></span>
+          <span style="display:flex;flex-direction:column"><span style="font-size:13px">{{ h.text }}</span><span class="text-muted" style="font-size:11px">{{ h.when }} · {{ h.by }}</span></span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ confirmOpen }}">
+<div class="dialog-backdrop" style="z-index:30">
+  <div class="dialog">
+    <div class="dialog-title">{{ confirmTitle }}</div>
+    <div class="dialog-body" style="display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:14px;row-gap:6px;font-size:13px">
+      <span class="text-muted">Slip</span><span style="font-family:ui-monospace,Menlo,monospace;word-break:break-all">{{ form.slip }}</span>
+      <span class="text-muted">Customer</span><span>{{ form.cname }} · {{ form.cmobile }}</span>
+      <span class="text-muted">Amount</span><span>{{ confirmAmount }} SAR</span>
+      <span class="text-muted">Store</span><span>{{ confirmStore }}</span>
+    </div>
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-400);display:flex;gap:6px"><i class="ph ph-lock-simple" style="margin-top:2px"></i>{{ confirmNote }}</p>
+    <div class="dialog-actions">
+      <button class="btn btn-secondary" onClick="{{ closeConfirm }}" style="min-height:44px">Back</button>
+      <button class="btn btn-primary" onClick="{{ doSubmit }}" disabled="{{ busy }}" style="min-height:44px">{{ saveLabel }}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ viewer }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closeViewer }}" style="position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:16px;background:color-mix(in srgb,var(--color-neutral-900) 92%,transparent);cursor:zoom-out">
+  <div role="img" aria-label="Slip" style="width:100%;height:92vh;background:center / contain no-repeat url({{ viewer }})"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ toast }}">
+<div style="position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:50;max-width:400px;width:calc(100% - 32px);display:flex;gap:8px;align-items:center;padding:12px 14px;border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-lg);font-size:13px">
+  <i class="ph ph-info" style="color:var(--color-accent);font-size:18px"></i><span>{{ toast }}</span>
+</div>
+</sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;requirePin&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sign-in&quot;},&quot;showDemoPins&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sign-in&quot;},&quot;minuteStep&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;5&quot;,&quot;15&quot;],&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Time dropdowns&quot;}}">
+const STORES=[{id:'thager',name:'Thager Plaza',region:'Central'},{id:'haramain',name:'Jeddah Haramain',region:'West'},{id:'dammam2',name:'Dammam 2',region:'East'}];
+const STORE=Object.fromEntries(STORES.map(s=>[s.id,s]));
+const REGIONS=['Central','West','East'];
+const PINS={order:'1111',delivery:'2222',admin:'9999'};
+const ROLES=[
+  {id:'order',label:'Order entry',icon:'ph-receipt',desc:'Registers customer slips and assigns a store'},
+  {id:'delivery',label:'Delivery / Store',icon:'ph-package',desc:'Prepares orders and records customer collection'},
+  {id:'admin',label:'Admin',icon:'ph-shield-check',desc:'Monitors everything and can edit locked invoices'}];
+const SL={Pending:'Awaiting prep',Ready:'Ready for delivery',Collected:'Collected'};
+const TAG={Pending:'tag-neutral',Ready:'tag-accent',Collected:'tag-outline'};
+const KEY='i2d.orders.v1',SKEY='i2d.session.v1';
+const pad=n=>String(n).padStart(2,'0');
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+const fmtDate=s=>s?s.split('-').reverse().join('/'):'';
+const stamp=iso=>{const d=new Date(iso);return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes())};
+const sar=n=>Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const norm=s=>(s||'').trim().toUpperCase().replace(/\s+/g,'');
+const pct=(a,b)=>(b?(a/b*100):0).toFixed(2)+'%';
+const MOB=/^05\d{8}$/;
+const FBV='https://www.gstatic.com/firebasejs/10.12.2/';
+const loadScript=src=>new Promise((res,rej)=>{if(document.querySelector('script[data-src="'+src+'"]'))return res();const s=document.createElement('script');s.src=src;s.dataset.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)});
+const emptyForm=()=>({slip:'',date:today(),trans:'',hh:'',mm:'',itemDraft:'',items:[],amount:'',cname:'',cmobile:'',photo:'',store:''});
+const uid=()=>'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const seed=()=>{const now=Date.now();const ago=h=>new Date(now-h*3600e3).toISOString();
+  const mk=(o,h,extra=[])=>({id:uid(),createdAt:ago(h),createdBy:'Order entry',history:[{at:ago(h),by:'Order entry',text:'Invoice registered & locked'},...extra.map(([hh,by,t])=>({at:ago(hh),by,text:t}))],...o});
+  return [
+    mk({slip:'000000RY59000022354',date:'2026-09-19',trans:'37133',time:'18:48',items:['26-1438','30-234'],amount:5771,cname:'Faisal Al-Harbi',cmobile:'0551234567',photo:'uploads/pasted-1790190384054-0.png',store:'thager',status:'Pending'},90),
+    mk({slip:'000000RY59000022361',date:'2026-09-20',trans:'37190',time:'12:15',items:['11-0457'],amount:1249,cname:'Noura Al-Qahtani',cmobile:'0509876543',photo:'',store:'thager',status:'Ready',readyAt:ago(40)},60,[[40,'Delivery · Thager Plaza','Marked ready for delivery']]),
+    mk({slip:'000000JH41000018802',date:'2026-09-20',trans:'20511',time:'16:02',items:['26-1438','44-120','30-234'],amount:7120.5,cname:'Omar Bakri',cmobile:'0567001122',photo:'',store:'haramain',status:'Collected',readyAt:ago(30),collected:{name:'Omar Bakri',mobile:'0567001122',date:'2026-09-22',time:'19:30',at:ago(8)}},55,[[30,'Delivery · Jeddah Haramain','Marked ready for delivery'],[8,'Delivery · Jeddah Haramain','Collected by Omar Bakri']]),
+    mk({slip:'000000JH41000018817',date:'2026-09-21',trans:'20588',time:'20:40',items:['52-009'],amount:389,cname:'Huda Saleh',cmobile:'0533445566',photo:'',store:'haramain',status:'Pending'},26),
+    mk({slip:'000000DM22000009140',date:'2026-09-22',trans:'11873',time:'10:05',items:['26-1440','30-234'],amount:3410,cname:'Abdullah Al-Dosari',cmobile:'0544556677',photo:'',store:'dammam2',status:'Ready',readyAt:ago(4)},20,[[4,'Delivery · Dammam 2','Marked ready for delivery']]),
+    mk({slip:'000000DM22000009151',date:'2026-09-22',trans:'11902',time:'17:22',items:['18-310'],amount:899,cname:'Reem Al-Otaibi',cmobile:'0598877665',photo:'',store:'dammam2',status:'Pending'},6)];
+};
+const compress=file=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const s=Math.min(1,1200/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',0.72))};img.onerror=rej;img.src=r.result};r.onerror=rej;r.readAsDataURL(file)});
+const defView=r=>r==='order'?'new':r==='delivery'?'list':'dash';
+const init=()=>{let orders,session=null;try{orders=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+  if(!Array.isArray(orders)){orders=seed();try{localStorage.setItem(KEY,JSON.stringify(orders))}catch(e){}}
+  try{session=JSON.parse(localStorage.getItem(SKEY))}catch(e){}
+  const st=(session&&session.store)||'thager';
+  return {orders,session,loginRole:'order',pin:'',loginErr:'',view:session?defView(session.role):'new',form:emptyForm(),errs:{},editingId:null,detailId:null,confirm:false,toast:'',viewer:'',q:'',statusF:'All',lRegion:STORE[st].region,lStore:session&&session.role==='delivery'?st:'All',collect:null,cErrs:{},dashRegion:'All',dashStore:'All',mode:'local',busy:false};
+};
+
+class Component extends DCLogic {
+  state=init();
+  async componentDidMount(){
+    try{await loadScript('firebase-config.js')}catch(e){}
+    const cfg=window.I2D_FIREBASE;if(!cfg||!cfg.config||!cfg.config.apiKey)return;
+    this.setState({mode:'connecting',session:null});
+    try{
+      for(const f of ['firebase-app-compat.js','firebase-auth-compat.js','firebase-firestore-compat.js','firebase-storage-compat.js'])await loadScript(FBV+f);
+      if(!firebase.apps.length)firebase.initializeApp(cfg.config);
+      this.fb={cfg,auth:firebase.auth(),db:firebase.firestore(),storage:cfg.photoStorage==='storage'?firebase.storage():null};
+      try{await this.fb.db.enablePersistence({synchronizeTabs:true})}catch(e){}
+      this.setState({mode:'cloud',orders:[],session:null});
+      this.fb.auth.onAuthStateChanged(async u=>{
+        if(this.unsub){this.unsub();this.unsub=null}
+        if(!u){this.setState({session:null,orders:[]});return}
+        let role=((cfg.roles||{})[(u.email||'').split('@')[0]])||null;if(!role)try{const snap=await this.fb.db.collection('users').doc(u.uid).get();role=snap.exists&&snap.data().role}catch(e){}
+        if(!ROLES.find(r=>r.id===role)){this.setState({loginErr:'This account has no role yet — add users/'+u.uid+' in Firestore.'});this.fb.auth.signOut();return}
+        const store=STORE[localStorage.getItem('i2d.store')]?localStorage.getItem('i2d.store'):'thager';
+        this.setState({session:{role,store,email:u.email},view:defView(role),lStore:role==='delivery'?store:'All',lRegion:STORE[store].region,statusF:'All',q:''});
+        this.unsub=this.fb.db.collection('orders').orderBy('createdAt','desc').onSnapshot(qs=>this.setState({orders:qs.docs.map(d=>({id:d.id,...d.data()}))}),err=>this.flash('Sync error: '+err.message));
+      });
+    }catch(e){this.setState({mode:'local'});this.flash('Firebase failed to load — running in local demo mode')}
+  }
+  componentWillUnmount(){this.unsub&&this.unsub()}
+  run(fn){this.setState({busy:true});return Promise.resolve().then(fn).catch(err=>{const m=(err&&err.message)||String(err);
+    if(m==='DUP'){this.setState({confirm:false,errs:{slip:'Duplicate — this slip number is already registered.'}});this.flash('Duplicate slip — not saved.')}
+    else{this.setState({confirm:false});this.flash('Not saved: '+(err&&err.code==='permission-denied'?'your role is not allowed to do that.':m))}}).finally(()=>this.setState({busy:false}))}
+  async uploadPhoto(id,url){if(!url||!url.startsWith('data:')||!this.fb.storage)return url;const r=this.fb.storage.ref('slips/'+id+'-'+Date.now()+'.jpg');await r.putString(url,'data_url',{contentType:'image/jpeg'});return r.getDownloadURL()}
+  async createOrder(rec,by,now){const key=norm(rec.slip);const hist=[{at:now,by,text:'Invoice registered & locked'}];
+    if(this.state.mode!=='cloud'){if(this.dupOf(rec.slip))throw new Error('DUP');const o={id:uid(),...rec,slipKey:key,status:'Pending',createdAt:now,createdBy:by,history:hist};if(!this.save([o,...this.state.orders]))throw new Error('device storage is full');return}
+    const db=this.fb.db,idx=db.collection('slipIndex').doc(key);if((await idx.get()).exists)throw new Error('DUP');
+    const ref=db.collection('orders').doc();const photo=await this.uploadPhoto(ref.id,rec.photo);
+    await db.runTransaction(async t=>{if((await t.get(idx)).exists)throw new Error('DUP');t.set(idx,{orderId:ref.id,at:now});t.set(ref,{...rec,photo,slipKey:key,status:'Pending',createdAt:now,createdBy:by,createdByEmail:this.fb.auth.currentUser.email,history:hist})})}
+  async editOrder(id,rec,hist){const key=norm(rec.slip);
+    if(this.state.mode!=='cloud'){const orders=this.state.orders.map(o=>o.id===id?{...o,...rec,slipKey:key,history:[...o.history,hist]}:o);if(!this.save(orders))throw new Error('device storage is full');return}
+    const db=this.fb.db,ref=db.collection('orders').doc(id);const photo=await this.uploadPhoto(id,rec.photo);
+    await db.runTransaction(async t=>{const cur=(await t.get(ref)).data();const oldKey=cur.slipKey||norm(cur.slip);
+      if(oldKey!==key){const ni=db.collection('slipIndex').doc(key);if((await t.get(ni)).exists)throw new Error('DUP');t.set(ni,{orderId:id,at:hist.at});t.delete(db.collection('slipIndex').doc(oldKey))}
+      t.update(ref,{...rec,photo,slipKey:key,history:firebase.firestore.FieldValue.arrayUnion(hist)})})}
+  async patchOrder(id,patch,hist){if(this.state.mode!=='cloud'){const orders=this.state.orders.map(o=>o.id===id?{...o,...patch,history:[...o.history,hist]}:o);if(!this.save(orders))throw new Error('device storage is full');return}
+    await this.fb.db.collection('orders').doc(id).update({...patch,history:firebase.firestore.FieldValue.arrayUnion(hist)})}
+  save(orders,extra={}){try{localStorage.setItem(KEY,JSON.stringify(orders));this.setState({orders,...extra});return true}catch(e){this.flash('Device storage is full — could not save. Export the report and clear old photos.');return false}}
+  flash(t){clearTimeout(this._t);this.setState({toast:t});this._t=setTimeout(()=>this.setState({toast:''}),3200)}
+  setForm(p){this.setState(s=>({form:{...s.form,...p},errs:{}}))}
+  dupOf(slip,exceptId){const n=norm(slip);return n?this.state.orders.find(o=>norm(o.slip)===n&&o.id!==exceptId):null}
+  roleName(){const s=this.state.session;if(!s)return '';if(s.role==='delivery')return 'Delivery · '+(STORE[this.state.lStore]||{}).name;return s.role==='admin'?'Admin':'Order entry'}
+  validate(f){const e={};const dup=this.dupOf(f.slip,this.state.editingId);
+    if(!f.slip.trim())e.slip='Enter the slip number';else if(dup)e.slip='Duplicate — this slip was already entered on '+stamp(dup.createdAt)+' for '+STORE[dup.store].name+'.';
+    if(!f.date)e.date='Pick the date';if(!f.trans.trim())e.trans='Enter Trans no.';
+    if(!f.hh||!f.mm)e.time='Select hour and minute';if(!f.items.length)e.items='Add at least one item number';
+    if(!(parseFloat(f.amount)>0))e.amount='Enter the net amount after savings';
+    if(!f.cname.trim())e.cname='Enter the customer name';if(!MOB.test(f.cmobile))e.cmobile='Saudi mobile — 10 digits starting 05';
+    if(!f.photo)e.photo='Photograph the slip';if(!f.store)e.store='Assign a store';return e}
+  addItem(){const f=this.state.form;const codes=f.itemDraft.split(/[,\s]+/).map(x=>x.trim().toUpperCase()).filter(Boolean);if(!codes.length)return;
+    const items=[...f.items];codes.forEach(c=>{if(!items.includes(c))items.push(c)});this.setForm({items,itemDraft:''})}
+  exportRows(rows,name){
+    const data=rows.map(o=>{const s=STORE[o.store]||{};const c=o.collected||{};const ed=(o.history||[]).filter(h=>h.by==='Admin');return {
+      'Slip No':o.slip,'Invoice Date':fmtDate(o.date),'Invoice Time':o.time,'Trans':o.trans,'Item Numbers':o.items.join(', '),'Item Count':o.items.length,
+      'Net Amount (SAR)':Number(o.amount),'Customer Name':o.cname,'Customer Mobile':o.cmobile,'Store':s.name,'Region':s.region,'Status':SL[o.status],
+      'Entered At':stamp(o.createdAt),'Entered By':o.createdBy,'Ready At':o.readyAt?stamp(o.readyAt):'','Receiver Name':c.name||'','Receiver Mobile':c.mobile||'',
+      'Collection Date':c.date?fmtDate(c.date):'','Collection Time':c.time||'','Slip Image':!o.photo?'Missing':/^https?:/.test(o.photo)?o.photo:'Attached (in app)','Entered By Account':o.createdByEmail||'','Admin Edits':ed.length,'Last Admin Edit':ed.length?stamp(ed[ed.length-1].at):''}});
+    if(!data.length){this.flash('No rows to export for this filter.');return}
+    const fn='invoice-delivery-'+name+'-'+today();
+    if(window.XLSX){const ws=XLSX.utils.json_to_sheet(data);ws['!cols']=Object.keys(data[0]).map(k=>({wch:Math.max(k.length,...data.map(r=>String(r[k]).length))+2}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Orders');XLSX.writeFile(wb,fn+'.xlsx')}
+    else{const keys=Object.keys(data[0]);const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';const csv='\ufeff'+[keys.map(esc).join(','),...data.map(r=>keys.map(k=>esc(r[k])).join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=fn+'.csv';a.click()}
+    this.flash('Exported '+data.length+' rows');
+  }
+  renderVals(){
+    const S=this.state,p=this.props;const sess=S.session;const role=sess&&sess.role;const cloud=S.mode==='cloud';
+    const step=Number(p.minuteStep??1)||1;
+    const hours=[...Array(24)].map((_,i)=>pad(i));const mins=[...Array(Math.ceil(60/step))].map((_,i)=>pad(i*step));
+    const vm=o=>{const s=STORE[o.store]||{};const n=o.items.length;return {...o,storeName:s.name,region:s.region,dateF:fmtDate(o.date),amountF:sar(o.amount),itemsLabel:n+' item'+(n===1?'':'s'),statusLabel:SL[o.status],tagClass:TAG[o.status],open:()=>this.setState({detailId:o.id,collect:null,cErrs:{}})}};
+    const sorted=S.orders.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+    const F=k=>e=>{let v=e.target.value;if(k==='amount')v=v.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1');if(k==='cmobile'||k==='trans')v=v.replace(/\D/g,'').slice(0,k==='cmobile'?10:12);this.setForm({[k]:v})};
+    const C=k=>e=>{let v=e.target.value;if(k==='mobile')v=v.replace(/\D/g,'').slice(0,10);this.setState(s=>({collect:{...s.collect,[k]:v},cErrs:{}}))};
+    // list
+    let base=sorted;if(S.lStore!=='All')base=base.filter(o=>o.store===S.lStore);
+    const ql=S.q.trim().toLowerCase();if(ql)base=base.filter(o=>[o.slip,o.trans,o.cname,o.cmobile,...o.items].join(' ').toLowerCase().includes(ql));
+    const cnt=st=>base.filter(o=>o.status===st).length;
+    const list=(S.statusF==='All'?base:base.filter(o=>o.status===S.statusF)).map(vm);
+    const statusChips=[['All','All',base.length],['Pending','Awaiting',cnt('Pending')],['Ready','Ready',cnt('Ready')],['Collected','Collected',cnt('Collected')]].map(([id,label,n])=>({label,n,active:S.statusF===id,pick:()=>this.setState({statusF:id})}));
+    const isDelivery=role==='delivery';
+    const lStoreOpts=isDelivery?STORES.filter(s=>s.region===S.lRegion).map(s=>({id:s.id,label:s.name+' — '+s.region})):[{id:'All',label:'All stores'},...STORES.map(s=>({id:s.id,label:s.name+' — '+s.region}))];
+    const setLStore=id=>{this.setState({lStore:id});if(isDelivery){const ns={...sess,store:id};localStorage.setItem('i2d.store',id);if(!cloud)localStorage.setItem(SKEY,JSON.stringify(ns));this.setState({session:ns})}};
+    const lRegions=REGIONS.map(r=>({label:r,active:S.lRegion===r,pick:()=>{this.setState({lRegion:r});setLStore(STORES.find(s=>s.region===r).id)}}));
+    // dashboard
+    let dl=S.orders;if(S.dashRegion!=='All')dl=dl.filter(o=>STORE[o.store].region===S.dashRegion);if(S.dashStore!=='All')dl=dl.filter(o=>o.store===S.dashStore);
+    const dc=st=>dl.filter(o=>o.status===st).length;const P=dc('Pending'),R=dc('Ready'),Cc=dc('Collected'),T=dl.length;
+    const go=st=>()=>this.setState({view:'list',statusF:st,lStore:isDelivery?S.lStore:(S.dashStore),q:''});
+    const kpis=[{label:'Total orders',n:T,color:'var(--color-neutral-400)',go:go('All')},{label:'Awaiting prep',n:P,color:'var(--color-neutral-600)',go:go('Pending')},{label:'Ready for delivery',n:R,color:'var(--color-accent)',go:go('Ready')},{label:'Collected',n:Cc,color:'var(--color-accent-300)',go:go('Collected')}];
+    const openVal=dl.filter(o=>o.status!=='Collected').reduce((a,o)=>a+Number(o.amount),0);
+    const byStore=STORES.filter(s=>(S.dashRegion==='All'||s.region===S.dashRegion)&&(S.dashStore==='All'||s.id===S.dashStore)).map(s=>{const os=S.orders.filter(o=>o.store===s.id);const c=st=>os.filter(o=>o.status===st).length;const p_=c('Pending'),r_=c('Ready'),c_=c('Collected');return {name:s.name,region:s.region,p:p_,r:r_,c:c_,pp:pct(p_,os.length),rp:pct(r_,os.length),cp:pct(c_,os.length),value:sar(os.reduce((a,o)=>a+Number(o.amount),0))}});
+    const recent=dl.flatMap(o=>(o.history||[]).map(h=>({...h,o}))).sort((a,b)=>b.at.localeCompare(a.at)).slice(0,6).map(h=>({text:h.text,when:stamp(h.at),slipShort:'…'+h.o.slip.slice(-6),storeName:STORE[h.o.store].name,icon:/Collected/.test(h.text)?'ph-handshake':/ready/i.test(h.text)?'ph-package':/Edited/.test(h.text)?'ph-pencil-simple':'ph-receipt',open:()=>this.setState({detailId:h.o.id,collect:null})}));
+    const dStoreOpts=[{id:'All',label:S.dashRegion==='All'?'All stores':'All '+S.dashRegion+' stores'},...STORES.filter(s=>S.dashRegion==='All'||s.region===S.dashRegion).map(s=>({id:s.id,label:s.name+' — '+s.region}))];
+    // detail
+    const od=S.orders.find(o=>o.id===S.detailId);let d=null;
+    if(od){const v=vm(od);d={...v,tel:'tel:'+od.cmobile,locked:role!=='admin',noPhoto:!od.photo,createdF:stamp(od.createdAt),collectedF:od.collected?fmtDate(od.collected.date)+' '+od.collected.time:'',
+      canReady:isDelivery&&od.status==='Pending',canCollectBtn:isDelivery&&od.status==='Ready'&&!S.collect,canEdit:role==='admin',
+      timeline:(od.history||[]).slice().reverse().map(h=>({text:h.text,when:stamp(h.at),by:h.by}))}}
+    const f=S.form;const dupLive=!S.errs.slip&&this.dupOf(f.slip,S.editingId);
+    const tabsBy={order:[['new','New invoice','ph-receipt'],['list','Invoices','ph-list-bullets'],['dash','Dashboard','ph-chart-bar']],delivery:[['list','Store queue','ph-package'],['dash','Dashboard','ph-chart-bar']],admin:[['dash','Dashboard','ph-chart-bar'],['list','All orders','ph-list-bullets'],['new','New invoice','ph-receipt']]};
+    const ro=ROLES.find(r=>r.id===role)||{};
+    const doLogin=()=>{if(S.mode==='connecting'||S.busy)return;
+      if(cloud){const id=(S.userId||'').trim().toLowerCase().replace(/[^a-z0-9._-]/g,'');if(!id||!S.pin){this.setState({loginErr:'Enter your user ID and password.'});return}
+        const em=id+'@'+(this.fb.cfg.userDomain||'i2d.app');
+        this.setState({busy:true,loginErr:''});this.fb.auth.signInWithEmailAndPassword(em,S.pin).then(()=>this.setState({pin:'',busy:false})).catch(err=>{const c=(err&&err.code)||'';const m={'auth/unauthorized-domain':'This website is not yet allowed in Firebase (Authentication → Settings → Authorized domains).','auth/network-request-failed':'No internet connection.','auth/too-many-requests':'Too many attempts — wait a minute and try again.','auth/invalid-api-key':'Firebase key in firebase-config.js is wrong.','auth/api-key-not-valid.-please-pass-a-valid-api-key.':'Firebase key in firebase-config.js is wrong.','auth/operation-not-allowed':'Turn on Email/Password in Firebase Authentication.'}[c];this.setState({busy:false,loginErr:m||'Incorrect user ID or password.'})});return}
+      if(p.requirePin!==false&&S.pin!==PINS[S.loginRole]){this.setState({loginErr:'Incorrect PIN for '+ROLES.find(r=>r.id===S.loginRole).label+'.'});return}
+      const ns={role:S.loginRole,store:(sess&&sess.store)||'thager'};localStorage.setItem(SKEY,JSON.stringify(ns));
+      this.setState({session:ns,pin:'',loginErr:'',view:defView(ns.role),lStore:ns.role==='delivery'?ns.store:'All',lRegion:STORE[ns.store].region,statusF:'All',q:''})};
+    return {
+      isLogin:!sess,isApp:!!sess,showRoles:!cloud&&S.mode!=='connecting',cloudLogin:cloud,userId:S.userId||'',onUserId:e=>this.setState({userId:e.target.value,loginErr:''}),requirePin:cloud||p.requirePin!==false,showDemoPins:!cloud&&S.mode!=='connecting'&&p.showDemoPins!==false,pin:S.pin,loginErr:S.loginErr,
+      pinLabel:cloud?'Password':'PIN',pinMode:cloud?'text':'numeric',pinMax:cloud?64:4,pinPh:cloud?'Account password':'4-digit PIN',
+      loginLabel:S.mode==='connecting'?'Connecting to Firebase…':S.busy?'Signing in…':'Sign in',loginDisabled:S.busy||S.mode==='connecting',
+      modeLabel:cloud?'Cloud sync':'Local demo',busy:S.busy,saveLabel:S.busy?'Saving…':S.editingId?'Save changes':'Submit & lock',
+      roles:ROLES.map(r=>({...r,active:S.loginRole===r.id,border:S.loginRole===r.id?'var(--color-accent)':'var(--color-neutral-800)',iconColor:S.loginRole===r.id?'var(--color-accent)':'var(--color-neutral-500)',pick:()=>this.setState({loginRole:r.id,loginErr:''})})),
+      onPin:e=>this.setState({pin:cloud?e.target.value:e.target.value.replace(/\D/g,'').slice(0,4),loginErr:''}),onPinKey:e=>{if(e.key==='Enter')doLogin()},login:doLogin,
+      logout:()=>{localStorage.removeItem(SKEY);if(cloud)this.fb.auth.signOut();this.setState({session:null,detailId:null,editingId:null,form:emptyForm(),errs:{}})},
+      roleIcon:ro.icon,roleLabel:ro.label,headerSub:isDelivery?(STORE[S.lStore]||{}).name+' · '+S.lRegion+' region':S.orders.length+' invoices on record',
+      tabs:(tabsBy[role]||[]).map(([id,label,icon])=>({label,icon,color:S.view===id?'var(--color-accent)':'var(--color-neutral-500)',go:()=>{this.setState({view:id});window.scrollTo(0,0)}})),
+      vNew:S.view==='new',vList:S.view==='list',vDash:S.view==='dash',
+      form:f,errs:S.errs,on:{slip:F('slip'),date:F('date'),trans:F('trans'),hh:F('hh'),mm:F('mm'),itemDraft:F('itemDraft'),amount:F('amount'),cname:F('cname'),cmobile:F('cmobile'),store:F('store')},
+      todayStr:today(),hours,mins,dupLive:dupLive?'Already registered on '+stamp(dupLive.createdAt)+' for '+STORE[dupLive.store].name+' — this slip cannot be added twice.':'',
+      isEditing:!!S.editingId,formTitle:S.editingId?'Edit invoice':'New invoice',formSub:S.editingId?'Admin edit — changes are logged in the invoice history.':'Every field is required. Once submitted, the invoice is locked — only Admin can edit it.',
+      submitLabel:S.editingId?'Save changes':'Submit invoice',
+      itemKey:e=>{if(e.key==='Enter'){e.preventDefault();this.addItem()}},addItem:()=>this.addItem(),
+      hasItems:f.items.length>0,itemCountLabel:f.items.length?f.items.length+' item'+(f.items.length>1?'s':''):'',formItems:f.items.map(c=>({code:c,remove:()=>this.setForm({items:f.items.filter(x=>x!==c)})})),
+      noPhoto:!f.photo,photoCta:'Take photo of slip',
+      onPhoto:e=>{const file=e.target.files&&e.target.files[0];e.target.value='';if(!file)return;compress(file).then(url=>this.setForm({photo:url})).catch(()=>this.flash('Could not read that image'))},
+      viewFormPhoto:()=>this.setState({viewer:f.photo}),viewDetailPhoto:()=>this.setState({viewer:od&&od.photo}),viewer:S.viewer,closeViewer:()=>this.setState({viewer:''}),
+      storeOpts:STORES.map(s=>({id:s.id,label:s.name+' — Region: '+s.region})),
+      submit:()=>{let ff=f;if(ff.itemDraft.trim()){this.addItem();ff={...ff,items:[...ff.items,...ff.itemDraft.split(/[,\s]+/).map(x=>x.trim().toUpperCase()).filter(x=>x&&!ff.items.includes(x))],itemDraft:''}}
+        const e=this.validate(ff);const n=Object.keys(e).length;if(n){this.setState({errs:e,form:ff});this.flash(n===1&&e.slip&&e.slip.startsWith('Duplicate')?'Duplicate slip — not saved.':n+' field'+(n>1?'s need':' needs')+' attention');window.scrollTo(0,0);return}this.setState({confirm:true,form:ff})},
+      cancelEdit:()=>this.setState({editingId:null,form:emptyForm(),errs:{},view:'list'}),
+      confirmOpen:S.confirm,confirmTitle:S.editingId?'Save admin changes?':'Submit this invoice?',confirmAmount:sar(f.amount),confirmStore:f.store?STORE[f.store].name+' · '+STORE[f.store].region:'',
+      confirmNote:S.editingId?'The edit will be recorded in the invoice history.':'After submitting, Order entry cannot change this invoice. It goes straight to the store’s delivery queue.',
+      closeConfirm:()=>this.setState({confirm:false}),
+      doSubmit:()=>{if(S.busy)return;const e=this.validate(f);if(Object.keys(e).length){this.setState({confirm:false,errs:e});return}
+        const now=new Date().toISOString();const rec={slip:f.slip.trim().toUpperCase(),date:f.date,trans:f.trans.trim(),time:f.hh+':'+f.mm,items:f.items,amount:Math.round(parseFloat(f.amount)*100)/100,cname:f.cname.trim(),cmobile:f.cmobile,photo:f.photo,store:f.store};
+        if(S.editingId){const old=S.orders.find(o=>o.id===S.editingId);const labels={slip:'slip',date:'date',trans:'trans',time:'time',items:'items',amount:'amount',cname:'customer',cmobile:'mobile',photo:'photo',store:'store'};
+          const ch=Object.keys(labels).filter(k=>JSON.stringify(old[k])!==JSON.stringify(rec[k])).map(k=>labels[k]);
+          const hist={at:now,by:'Admin',text:'Edited by Admin'+(ch.length?' — '+ch.join(', '):' — no changes')};const eid=S.editingId;
+          this.run(async()=>{await this.editOrder(eid,rec,hist);this.setState({confirm:false,editingId:null,form:emptyForm(),view:'list',detailId:eid});this.flash('Invoice updated')})}
+        else{const by=role==='admin'?'Admin':'Order entry';
+          this.run(async()=>{await this.createOrder(rec,by,now);this.setState({confirm:false,form:emptyForm()});this.flash('Locked & sent to '+STORE[rec.store].name);window.scrollTo(0,0)})}},
+      isDelivery,notDelivery:!isDelivery,listTitle:isDelivery?'Store queue':role==='admin'?'All orders':'Invoices',
+      listSub:isDelivery?'Orders assigned to your store. Tap one to prepare or hand over.':role==='admin'?'Tap any order to review or edit.':'Submitted invoices are read-only.',
+      lRegions,lStore:S.lStore,lStoreOpts,onLStore:e=>setLStore(e.target.value),q:S.q,onQ:e=>this.setState({q:e.target.value}),statusChips,list,listEmpty:!list.length,
+      dashSub:(S.dashStore!=='All'?STORE[S.dashStore].name:S.dashRegion==='All'?'All regions':S.dashRegion+' region')+' · '+T+' orders',
+      dRegions:['All',...REGIONS].map(r=>({label:r,active:S.dashRegion===r,pick:()=>this.setState({dashRegion:r,dashStore:'All'})})),dashStore:S.dashStore,dStoreOpts,onDashStore:e=>this.setState({dashStore:e.target.value}),
+      kpis,totalValue:sar(dl.reduce((a,o)=>a+Number(o.amount),0)),openValueLabel:sar(openVal)+' not yet collected',pipe:{p:pct(P,T),r:pct(R,T),c:pct(Cc,T)},byStore,recent,
+      exportSub:'Every field, readiness and collection record · '+T+' rows in current filter',exportFiltered:()=>this.exportRows(dl,S.dashStore!=='All'?S.dashStore:S.dashRegion.toLowerCase()),exportAll:()=>this.exportRows(sorted,'all'),
+      hasDetail:!!d,d:d||{},closeDetail:()=>this.setState({detailId:null,collect:null,cErrs:{}}),
+      markReady:()=>{if(S.busy)return;const now=new Date().toISOString();this.run(async()=>{await this.patchOrder(od.id,{status:'Ready',readyAt:now},{at:now,by:this.roleName(),text:'Marked ready for delivery'});this.flash('Marked Ready for Delivery')})},
+      startCollect:()=>{const n=new Date();this.setState({collect:{name:'',mobile:'',date:today(),hh:pad(n.getHours()),mm:pad(Math.floor(n.getMinutes()/step)*step)},cErrs:{}})},
+      collectOpen:!!S.collect&&!!od&&od.status==='Ready',collect:S.collect||{},cErrs:S.cErrs,cOn:{name:C('name'),mobile:C('mobile'),date:C('date'),hh:C('hh'),mm:C('mm')},
+      sameAsCustomer:()=>this.setState(s=>({collect:{...s.collect,name:od.cname,mobile:od.cmobile},cErrs:{}})),cancelCollect:()=>this.setState({collect:null,cErrs:{}}),
+      confirmCollect:()=>{const c=S.collect;const e={};if(!c.name.trim())e.name='Enter the receiver’s name';if(!MOB.test(c.mobile))e.mobile='Saudi mobile — 10 digits starting 05';if(!c.date)e.date='Pick the collection date';else if(c.date<od.date)e.date='Cannot be before the invoice date';if(!c.hh||!c.mm)e.time='Select hour and minute';
+        if(Object.keys(e).length){this.setState({cErrs:e});return}const now=new Date().toISOString();
+        if(S.busy)return;this.run(async()=>{await this.patchOrder(od.id,{status:'Collected',collected:{name:c.name.trim(),mobile:c.mobile,date:c.date,time:c.hh+':'+c.mm,at:now}},{at:now,by:this.roleName(),text:'Collected by '+c.name.trim()});this.setState({collect:null});this.flash('Collection recorded')})},
+      editDetail:()=>{const [hh,mm]=(od.time||':').split(':');this.setState({editingId:od.id,detailId:null,view:'new',errs:{},form:{slip:od.slip,date:od.date,trans:od.trans,hh,mm,itemDraft:'',items:[...od.items],amount:String(od.amount),cname:od.cname,cmobile:od.cmobile,photo:od.photo,store:od.store}});window.scrollTo(0,0)},
+      toast:S.toast
+    };
+  }
+}
+</script>
+</body>
+</html>
