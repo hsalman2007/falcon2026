@@ -11,7 +11,12 @@ window.I2D_FIREBASE = {
   // Staff sign in with a simple User ID. Behind the scenes it becomes userid@i2d.app
   userDomain: "i2d.app",
   // User ID → role (order / delivery / admin). Keep in step with firestore.rules.
-  roles: { user1: "order", user2: "delivery", admin: "admin" },
+  roles: { user1: "order", user2: "delivery", admin: "admin",
+    central: "delivery", north: "delivery", south: "delivery", east: "delivery", west: "delivery" },
+  // Regional delivery accounts — locked to the stores of one region.
+  regions: { central: "Central", north: "North", south: "South", east: "East", west: "West" },
   // "firestore" = photo saved inside the order (free plan). "storage" = Firebase Storage (Blaze plan).
-  photoStorage: "firestore"
+  photoStorage: "firestore",
+  // App Check for AI slip reading — paste your reCAPTCHA v3 SITE key here (Firebase → App Check → register web app).
+  recaptchaKey: ""
 };
