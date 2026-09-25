@@ -736,7 +736,7 @@ class Component extends DCLogic {
     // detail
     const od=S.orders.find(o=>o.id===S.detailId);let d=null;
     if(od){const v=vm(od);d={...v,tel:'tel:'+od.cmobile,cmobile2:od.cmobile2||'',tel2:'tel:'+(od.cmobile2||''),locked:role!=='admin',noPhoto:!od.photo,createdF:stamp(od.createdAt),createdBy:trBy(od.createdBy),collectedF:od.collected?fmtDate(od.collected.date)+' '+od.collected.time:'',
-      canReady:isDelivery&&PREP.includes(od.status)&&!S.reassign,pendingDoc:od.status==='Collected',canAttachDoc:isDelivery,canCollectBtn:isDelivery&&od.status==='Ready'&&!S.collect&&!S.reassign,canEdit:role==='admin',canReassign:isDelivery&&[...PREP,'Ready'].includes(od.status)&&!S.reassign&&!S.collect,
+      canReady:isDelivery&&PREP.includes(od.status)&&!S.reassign,pendingDoc:od.status==='Collected',canAttachDoc:isDelivery,canCollectBtn:isDelivery&&od.status==='Ready'&&!S.collect&&!S.reassign,canEdit:role==='admin',canReassign:isDelivery&&PREP.includes(od.status)&&!S.reassign&&!S.collect,
       timeline:(od.history||[]).slice().reverse().map(h=>({text:trHist(h.text),when:stamp(h.at),by:trBy(h.by)}))}}
     const f=S.form;const dupLive=!S.errs.slip&&this.dupOf(f.slip,S.editingId);
     const tabsBy={order:[['new','New invoice','ph-receipt'],['list','Invoices','ph-list-bullets'],['dash','Dashboard','ph-chart-bar']],delivery:[['list','Store queue','ph-package'],['dash','Dashboard','ph-chart-bar']],admin:[['dash','Dashboard','ph-chart-bar'],['list','All orders','ph-list-bullets'],['new','New invoice','ph-receipt']]};
@@ -804,7 +804,7 @@ class Component extends DCLogic {
         if(S.busy)return;this.run(async()=>{await this.patchOrder(od.id,{status:od.transferAt?'Completed':'Collected',...(od.transferAt?{completedAt:now}:{}),collected:{name:c.name.trim(),mobile:c.mobile,date:today(),time:pad(new Date().getHours())+':'+pad(new Date().getMinutes()),at:now}},{at:now,by:this.roleName(),text:'Collected by '+c.name.trim()});this.setState({collect:null});this.flash(L(od.transferAt?'Order completed':'Collection recorded'))})},
       editDetail:()=>{const [hh,mm]=(od.time||':').split(':');this.setState({editingId:od.id,detailId:null,view:'new',errs:{},form:{slip:od.slip,date:od.date,trans:od.trans,hh,mm,itemDraft:'',items:NI(od.items),qtyDraft:'1',amount:String(od.amount),cname:od.cname,cmobile:od.cmobile,cmobile2:od.cmobile2||'',photo:od.photo,store:od.store}});window.scrollTo(0,0)},
       isAdmin:role==='admin',exportTransfers:()=>this.exportTransfers(),
-      reassignOpen:!!S.reassign&&!!od&&[...PREP,'Ready'].includes(od.status),reassign:S.reassign||{},reErr:S.reErr||'',reStoreOpts:od?STORES.filter(s=>s.id!==od.store).map(s=>({id:s.id,label:s.name+' — '+L(s.region)})):[],
+      reassignOpen:!!S.reassign&&!!od&&PREP.includes(od.status),reassign:S.reassign||{},reErr:S.reErr||'',reStoreOpts:od?STORES.filter(s=>s.id!==od.store).map(s=>({id:s.id,label:s.name+' — '+L(s.region)})):[],
       startReassign:()=>this.setState({reassign:{to:'',remarks:''},reErr:'',collect:null,cErrs:{}}),cancelReassign:()=>this.setState({reassign:null,reErr:''}),
       onReTo:e=>{const v=e.target.value;this.setState(s=>({reassign:{...s.reassign,to:v},reErr:''}))},onReRemarks:e=>{const v=e.target.value.slice(0,300);this.setState(s=>({reassign:{...s.reassign,remarks:v}}))},
       confirmReassign:()=>{const r=S.reassign;if(!r||!r.to){this.setState({reErr:L('Choose the new store')});return}if(S.busy)return;const now=new Date().toISOString(),from=od.store,rem=r.remarks.trim(),by=this.roleName(),id=od.id;
